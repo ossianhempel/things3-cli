@@ -5,7 +5,7 @@ import "testing"
 func TestUpdateAuthTokenRequired(t *testing.T) {
 	_, errOut, code := runThings(t, "", "update")
 	requireFailure(t, code)
-	assertContains(t, errOut, "Must specify --auth-token=token")
+	assertContains(t, errOut, "Missing Things auth token")
 }
 
 func TestUpdateIDRequired(t *testing.T) {
