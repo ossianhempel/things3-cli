@@ -91,6 +91,7 @@ fi
 
 COMMIT=$(git rev-parse HEAD)
 SHORT_COMMIT=${COMMIT:0:7}
+COMMIT_DATE=$(git show -s --format=%cd --date=format:%Y%m%d%H%M%S "$COMMIT")
 URL="https://github.com/ossianhempel/things3-cli/archive/${COMMIT}.tar.gz"
 
 if ! command -v curl >/dev/null 2>&1; then
@@ -106,12 +107,13 @@ class Things3Cli < Formula
   homepage "https://github.com/ossianhempel/things3-cli"
   url "${URL}"
   sha256 "${SHA}"
-  version "${SHORT_COMMIT}"
+  version "${COMMIT_DATE}"
 
   depends_on "go" => :build
 
   def install
-    ldflags = "-s -w -X github.com/ossianhempel/things3-cli/internal/cli.Version=#{version}"
+    ld_version = "${SHORT_COMMIT}"
+    ldflags = "-s -w -X github.com/ossianhempel/things3-cli/internal/cli.Version=#{ld_version}"
     system "go", "build", "-trimpath", "-ldflags", ldflags, "-o", bin/"things", "./cmd/things"
   end
 

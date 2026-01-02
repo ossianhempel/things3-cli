@@ -1,14 +1,15 @@
 class Things3Cli < Formula
   desc "CLI for Things 3"
   homepage "https://github.com/ossianhempel/things3-cli"
-  url "https://github.com/ossianhempel/things3-cli/archive/db9b7deb37876a0b06d7aefb5d28292df7183a4c.tar.gz"
-  sha256 "d3236a2886893417ee2d9421248b50daf8d728deef4e2e2e8cb3b7a9d50c409c"
-  version "db9b7de"
+  url "https://github.com/ossianhempel/things3-cli/archive/959aeea72c81cf93a91c9811dd7c127e9b21b7d8.tar.gz"
+  sha256 "a994a73e258b97a4e941c636613c295a0a36061f7e7e205cf7930777e58aadad"
+  version "20260102103314"
 
   depends_on "go" => :build
 
   def install
-    ldflags = "-s -w -X github.com/ossianhempel/things3-cli/internal/cli.Version=#{version}"
+    ld_version = "959aeea"
+    ldflags = "-s -w -X github.com/ossianhempel/things3-cli/internal/cli.Version=#{ld_version}"
     system "go", "build", "-trimpath", "-ldflags", ldflags, "-o", bin/"things", "./cmd/things"
   end
 
