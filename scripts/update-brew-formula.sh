@@ -5,13 +5,31 @@ ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$ROOT_DIR"
 
 VERSION=""
-if [[ "${1:-}" == "--version" ]]; then
-  VERSION=${2:-}
-  if [[ -z "$VERSION" ]]; then
-    echo "ERROR: --version requires a value (e.g. v0.1.0)." >&2
-    exit 1
-  fi
-fi
+TAP_DIR=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --version)
+      VERSION=${2:-}
+      if [[ -z "$VERSION" ]]; then
+        echo "ERROR: --version requires a value (e.g. v0.1.0)." >&2
+        exit 1
+      fi
+      shift 2
+      ;;
+    --tap-dir)
+      TAP_DIR=${2:-}
+      if [[ -z "$TAP_DIR" ]]; then
+        echo "ERROR: --tap-dir requires a path." >&2
+        exit 1
+      fi
+      shift 2
+      ;;
+    *)
+      echo "usage: scripts/update-brew-formula.sh [--version vX.Y.Z] [--tap-dir PATH]" >&2
+      exit 1
+      ;;
+  esac
+done
 
 mkdir -p "$ROOT_DIR/Formula"
 
@@ -61,6 +79,12 @@ class Things3Cli < Formula
 end
 FORMULA
 
+  if [[ -n "$TAP_DIR" ]]; then
+    mkdir -p "$TAP_DIR/Formula"
+    cp "$ROOT_DIR/Formula/things3-cli.rb" "$TAP_DIR/Formula/things3-cli.rb"
+    echo "Copied formula to $TAP_DIR/Formula/things3-cli.rb"
+  fi
+
   echo "Wrote Formula/things3-cli.rb for release ${TAG}"
   exit 0
 fi
@@ -96,5 +120,11 @@ class Things3Cli < Formula
   end
 end
 FORMULA
+
+if [[ -n "$TAP_DIR" ]]; then
+  mkdir -p "$TAP_DIR/Formula"
+  cp "$ROOT_DIR/Formula/things3-cli.rb" "$TAP_DIR/Formula/things3-cli.rb"
+  echo "Copied formula to $TAP_DIR/Formula/things3-cli.rb"
+fi
 
 echo "Wrote Formula/things3-cli.rb for commit ${COMMIT}"

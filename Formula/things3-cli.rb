@@ -1,9 +1,9 @@
 class Things3Cli < Formula
   desc "CLI for Things 3"
   homepage "https://github.com/ossianhempel/things3-cli"
-  url "https://github.com/ossianhempel/things3-cli/archive/32f13fecfc6bccdafbfa1a461b716545f1fc4917.tar.gz"
-  sha256 "ef9b7b50197f2142b9dbe7e231fafae04b751a8545584a822dcf3c7ff48965b9"
-  version "32f13fe"
+  url "https://github.com/ossianhempel/things3-cli/archive/d2c4b46a400656ff35ff249aa58ae0ecd5e168e2.tar.gz"
+  sha256 "238bc0e6e278b49010f57b66d2329d00609c177d094d278c251b856da9f7d8c7"
+  version "d2c4b46"
 
   depends_on "go" => :build
 

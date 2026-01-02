@@ -26,8 +26,7 @@ make install
 ## Installation (Homebrew)
 
 ```
-brew tap ossianhempel/things3-cli
-brew install things3-cli
+brew install ossianhempel/tap/things3-cli
 ```
 
 ## Target features (parity with reference)
