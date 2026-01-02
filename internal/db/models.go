@@ -100,16 +100,25 @@ type ProjectFilter struct {
 }
 
 type TaskFilter struct {
-	Status           *int
-	IncludeTrashed   bool
+	Status                *int
+	IncludeTrashed        bool
 	ExcludeTrashedContext bool
-	ProjectID        string
-	AreaID           string
-	TagID            string
-	Search           string
-	Limit            int
-	IncludeChecklist bool
-	Types            []int
+	ProjectID             string
+	AreaID                string
+	TagID                 string
+	Search                string
+	Limit                 int
+	Offset                int
+	IncludeChecklist      bool
+	Types                 []int
+	CreatedBefore         *float64
+	CreatedAfter          *float64
+	ModifiedBefore        *float64
+	ModifiedAfter         *float64
+	DueBefore             *int
+	StartBefore           *int
+	HasURL                *bool
+	Order                 string
 }
 
 func StatusLabel(status int) string {

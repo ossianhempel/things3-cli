@@ -25,11 +25,19 @@ func NewAllCommand(app *App) *cobra.Command {
 			}
 			defer store.Close()
 
-			incompleteFilter, err := buildTaskFilter(store, "incomplete", false, false, "", "", "", "", limit, recursive)
+			incompleteFilter, _, err := buildTaskFilter(store, TaskQueryOptions{
+				Status:           "incomplete",
+				Limit:            limit,
+				IncludeChecklist: recursive,
+			})
 			if err != nil {
 				return err
 			}
-			anyFilter, err := buildTaskFilter(store, "any", false, false, "", "", "", "", limit, recursive)
+			anyFilter, _, err := buildTaskFilter(store, TaskQueryOptions{
+				Status:           "any",
+				Limit:            limit,
+				IncludeChecklist: recursive,
+			})
 			if err != nil {
 				return err
 			}
@@ -101,6 +109,7 @@ func NewAllCommand(app *App) *cobra.Command {
 				enc := json.NewEncoder(app.Out)
 				return enc.Encode(sections)
 			}
+			tableOpts := TaskOutputOptions{Format: "table", NoHeader: noHeader}
 
 			first := true
 			printSection := func(title string, fn func() error) error {
@@ -116,7 +125,7 @@ func NewAllCommand(app *App) *cobra.Command {
 				if len(inbox) == 0 {
 					return nil
 				}
-				return printTasks(app.Out, inbox, false, noHeader)
+				return printTasks(app.Out, inbox, tableOpts)
 			}); err != nil {
 				return err
 			}
@@ -124,7 +133,7 @@ func NewAllCommand(app *App) *cobra.Command {
 				if len(today) == 0 {
 					return nil
 				}
-				return printTasks(app.Out, today, false, noHeader)
+				return printTasks(app.Out, today, tableOpts)
 			}); err != nil {
 				return err
 			}
@@ -132,7 +141,7 @@ func NewAllCommand(app *App) *cobra.Command {
 				if len(upcoming) == 0 {
 					return nil
 				}
-				return printTasks(app.Out, upcoming, false, noHeader)
+				return printTasks(app.Out, upcoming, tableOpts)
 			}); err != nil {
 				return err
 			}
@@ -140,7 +149,7 @@ func NewAllCommand(app *App) *cobra.Command {
 				if len(anytime) == 0 {
 					return nil
 				}
-				return printTasks(app.Out, anytime, false, noHeader)
+				return printTasks(app.Out, anytime, tableOpts)
 			}); err != nil {
 				return err
 			}
@@ -148,7 +157,7 @@ func NewAllCommand(app *App) *cobra.Command {
 				if len(someday) == 0 {
 					return nil
 				}
-				return printTasks(app.Out, someday, false, noHeader)
+				return printTasks(app.Out, someday, tableOpts)
 			}); err != nil {
 				return err
 			}
@@ -156,7 +165,7 @@ func NewAllCommand(app *App) *cobra.Command {
 				if len(logbook) == 0 {
 					return nil
 				}
-				return printTasks(app.Out, logbook, false, noHeader)
+				return printTasks(app.Out, logbook, tableOpts)
 			}); err != nil {
 				return err
 			}

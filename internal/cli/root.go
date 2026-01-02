@@ -60,6 +60,7 @@ func NewRoot(app *App) *cobra.Command {
 	cmd.AddCommand(NewDeleteAreaCommand(app))
 	cmd.AddCommand(NewDeleteProjectCommand(app))
 	cmd.AddCommand(NewUpdateProjectCommand(app))
+	cmd.AddCommand(NewUndoCommand(app))
 	cmd.AddCommand(NewShowCommand(app))
 	cmd.AddCommand(NewSearchCommand(app))
 
@@ -124,6 +125,8 @@ func NewRoot(app *App) *cobra.Command {
 				printHelp(app.Out, formatHelpText(updateHelp, isTTY(app.Out)))
 			case "delete":
 				printHelp(app.Out, formatHelpText(deleteHelp, isTTY(app.Out)))
+			case "undo":
+				printHelp(app.Out, formatHelpText(undoHelp, isTTY(app.Out)))
 			case "update-area":
 				printHelp(app.Out, formatHelpText(updateAreaHelp, isTTY(app.Out)))
 			case "delete-area":
@@ -200,6 +203,8 @@ func NewRoot(app *App) *cobra.Command {
 			printHelp(app.Out, formatHelpText(updateHelp, isTTY(app.Out)))
 		case "delete":
 			printHelp(app.Out, formatHelpText(deleteHelp, isTTY(app.Out)))
+		case "undo":
+			printHelp(app.Out, formatHelpText(undoHelp, isTTY(app.Out)))
 		case "update-area":
 			printHelp(app.Out, formatHelpText(updateAreaHelp, isTTY(app.Out)))
 		case "delete-area":

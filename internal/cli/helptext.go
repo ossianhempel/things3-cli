@@ -15,6 +15,7 @@ COMMANDS
   add            - add new todo
   update         - update exiting todo
   delete         - delete an existing todo
+  undo           - undo the last bulk action
   add-area       - add new area
   add-project    - add new project
   update-area    - update exiting area
@@ -227,8 +228,38 @@ OPTIONS
   --search=TEXT
     Case-insensitive substring match on title or notes.
 
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -239,8 +270,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -278,8 +315,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -290,8 +360,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -329,8 +405,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -341,8 +450,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -380,12 +495,44 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
 
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
+
   --recursive
     Include checklist items in JSON output.
-
 
   --include-trashed
     Include trashed tasks.
@@ -393,8 +540,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -431,8 +584,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -444,8 +630,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -482,8 +674,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -495,8 +720,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -534,12 +765,44 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
 
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
+
   --recursive
     Include checklist items in JSON output.
-
 
   --include-trashed
     Include trashed tasks.
@@ -547,8 +810,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -586,8 +855,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -599,8 +901,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -637,8 +945,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -650,8 +991,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -688,8 +1035,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -701,8 +1081,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -739,8 +1125,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -752,8 +1171,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -790,8 +1215,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -803,8 +1261,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -841,8 +1305,41 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
+  --search=TEXT
+    Case-insensitive substring match on title or notes.
+
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -854,8 +1351,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -1155,8 +1658,11 @@ SYNOPSIS
   things search [--] <-|QUERY>
 
 DESCRIPTION
-  Searches tasks in the local Things database by title or notes. Query is
-  required.
+  Searches tasks in the local Things database. The QUERY argument performs a
+  case-insensitive substring search on title or notes. Use {{BT}}--query{{BT}}
+  for rich queries with boolean ops, fields, and regex.
+
+  Query is required.
 
   If {{BT}}-{{BT}} is given as a query, it is read from STDIN.
 
@@ -1176,8 +1682,38 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
-  --limit=COUNT
-    Limit the number of results. 0 means no limit. Default: 200.
+  --query=QUERY
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:work).
+
+  --limit=N
+    Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --created-after=DATE
+    Filter tasks created after (YYYY-MM-DD or RFC3339).
+
+  --created-before=DATE
+    Filter tasks created before (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks starting before (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -1188,8 +1724,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -1214,6 +1756,9 @@ SYNOPSIS
 
 DESCRIPTION
   Updates an existing todo identified by {{BT}}--id={{BT}}.
+  If query filters are provided instead of {{BT}}--id{{BT}}, updates all
+  matching todos. Use {{BT}}--dry-run{{BT}} to preview and {{BT}}--yes{{BT}}
+  to confirm bulk updates.
 
   If {{BT}}-{{BT}} is given as a title, it is read from STDIN. When titles have
   multiple lines of text, the first is set as the todo's title and the
@@ -1233,12 +1778,19 @@ AUTHORIZATION
     3. Copy the token (or enable "Allow 'things' CLI to access Things").
 
 OPTIONS
+  --db=PATH
+    Path to the Things database. Overrides the THINGSDB environment variable.
+
   --auth-token=TOKEN
     The Things URL scheme authorization token. Required. See below for more
     information on authorization. If not provided, uses THINGS_AUTH_TOKEN.
 
   --id=ID
-    The ID of the todo to update. Required.
+    The ID of the todo to update. Required for single updates. Optional when
+    using query filters for bulk updates.
+
+  --yes
+    Confirm bulk update.
 
   --notes=NOTES
     The notes of the todo. This will replace the existing notes. Maximum
@@ -1370,10 +1922,12 @@ SYNOPSIS
   things delete [OPTIONS...] [--] [-|TITLE]
 
 DESCRIPTION
-  Deletes an existing todo using AppleScript. You may be prompted to grant
-  Things automation permission to your terminal.
+  Deletes todos using AppleScript. Provide {{BT}}--id={{BT}} or a title for a
+  single todo, or use query filters (same as {{BT}}things tasks{{BT}}) for bulk
+  delete. Use {{BT}}--dry-run{{BT}} to preview matches and {{BT}}--yes{{BT}} to
+  confirm bulk actions.
 
-  When running interactively, you will be prompted to confirm the deletion.
+  When running interactively, you will be prompted to confirm single deletes.
   For non-interactive use, pass {{BT}}--confirm={{BT}} with the todo ID or title.
 
   The todo can be identified by {{BT}}--id={{BT}} or by title from the
@@ -1381,6 +1935,9 @@ DESCRIPTION
   from STDIN.
 
 OPTIONS
+  --db=PATH
+    Path to the Things database. Overrides the THINGSDB environment variable.
+
   --id=ID
     The ID of the todo to delete. Optional if a title is provided.
 
@@ -1388,10 +1945,35 @@ OPTIONS
     Confirm deletion by typing the todo ID or title. Required in non-interactive
     mode. Optional when prompted.
 
+  --yes
+    Confirm bulk delete.
+
 EXAMPLES
   things delete --id=ABC123
 
   things delete "Pay bills"
+`
+
+const undoHelp = `Usage: things undo [OPTIONS...]
+
+NAME
+  things undo - undo the last bulk action
+
+SYNOPSIS
+  things undo [OPTIONS...]
+
+DESCRIPTION
+  Replays the last bulk update or trash action recorded by things3-cli.
+  Undoing updates requires a Things URL scheme token. Undoing trash recreates
+  tasks as new items.
+
+OPTIONS
+  --auth-token=TOKEN
+    The Things URL scheme authorization token. If not provided, uses
+    THINGS_AUTH_TOKEN.
+
+  --yes
+    Confirm undo for multiple tasks.
 `
 
 const updateAreaHelp = `Usage: things update-area [OPTIONS...] [--] [-|TITLE]
