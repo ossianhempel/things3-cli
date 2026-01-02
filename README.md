@@ -4,18 +4,12 @@
 
 CLI for Things 3 by Cultured Code, implemented in Go.
 
-This project aims to reproduce the behavior and UX of the open source
-reference CLI (in another language) while shipping a single Go binary with
-unit and integration tests. The reference repository that inspires this work
-is:
-
-- https://github.com/itspriddle/things-cli
-- https://github.com/thingsapi/things-cli
+This project ships a single Go binary with unit and integration tests.
 
 ## Status
 
-Work in progress. The goal is feature parity with the reference CLI and full
-end-to-end coverage for the Things URL scheme interactions on macOS.
+Work in progress. The goal is full end-to-end coverage for the Things URL
+scheme interactions on macOS.
 
 ## Installation (from source)
 
@@ -29,7 +23,7 @@ make install
 brew install ossianhempel/tap/things3-cli
 ```
 
-## Target features (parity with reference)
+## Features
 
 - `add`              Add a new todo
 - `update`           Update an existing todo (requires auth token)
