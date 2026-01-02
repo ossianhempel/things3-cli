@@ -14,6 +14,8 @@ DESCRIPTION
 COMMANDS
   add            - add new todo
   update         - update exiting todo
+  delete         - move todos to Trash
+  undo           - undo the last bulk action
   add-area       - add new area
   add-project    - add new project
   update-area    - update exiting area
@@ -224,8 +226,38 @@ OPTIONS
   --search=TEXT
     Case-insensitive substring match on title or notes.
 
+  --query=EXPR
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:reading).
+
+  --created-before=DATE
+    Filter tasks created before DATE (YYYY-MM-DD or RFC3339).
+
+  --created-after=DATE
+    Filter tasks created after DATE (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before DATE (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after DATE (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before DATE (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks scheduled before DATE (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
   --limit=N
     Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -236,8 +268,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -258,6 +296,7 @@ SYNOPSIS
 DESCRIPTION
   Lists tasks that should appear in Today using the local Things database.
   This mirrors the Things logic for today (including predicted items).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -309,6 +348,7 @@ SYNOPSIS
 DESCRIPTION
   Lists tasks that are in the Inbox list (unfiled) using the local Things
   database (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -360,6 +400,7 @@ SYNOPSIS
 DESCRIPTION
   Lists tasks scheduled in the future using the local Things database
   (read-only). Tasks with only deadlines are not included.
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -411,6 +452,7 @@ SYNOPSIS
 
 DESCRIPTION
   Lists tasks in Anytime using the local Things database (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -462,6 +504,7 @@ SYNOPSIS
 
 DESCRIPTION
   Lists tasks in Someday using the local Things database (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -514,6 +557,7 @@ SYNOPSIS
 DESCRIPTION
   Lists completed and canceled tasks from the local Things database
   (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -566,6 +610,7 @@ SYNOPSIS
 DESCRIPTION
   Lists tasks completed or canceled today using the local Things database
   (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -617,6 +662,7 @@ SYNOPSIS
 
 DESCRIPTION
   Lists tasks created today using the local Things database (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -668,6 +714,7 @@ SYNOPSIS
 
 DESCRIPTION
   Lists completed tasks from the local Things database (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -719,6 +766,7 @@ SYNOPSIS
 
 DESCRIPTION
   Lists canceled tasks from the local Things database (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -770,6 +818,7 @@ SYNOPSIS
 
 DESCRIPTION
   Lists trashed tasks from the local Things database (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -821,6 +870,7 @@ SYNOPSIS
 
 DESCRIPTION
   Lists tasks with deadlines using the local Things database (read-only).
+  Supports the same filters and output controls as {{BT}}things tasks{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -1153,7 +1203,7 @@ SYNOPSIS
 
 DESCRIPTION
   Searches tasks in the local Things database by title or notes. Query is
-  required.
+  required. Use --query for rich boolean/regex syntax.
 
   If {{BT}}-{{BT}} is given as a query, it is read from STDIN.
 
@@ -1173,8 +1223,38 @@ OPTIONS
   --tag=TAG
     Filter by tag title or ID.
 
-  --limit=COUNT
-    Limit the number of results. 0 means no limit. Default: 200.
+  --query=EXPR
+    Rich query with boolean ops, fields, and regex (e.g. title:/regex/ AND tag:reading).
+
+  --created-before=DATE
+    Filter tasks created before DATE (YYYY-MM-DD or RFC3339).
+
+  --created-after=DATE
+    Filter tasks created after DATE (YYYY-MM-DD or RFC3339).
+
+  --modified-before=DATE
+    Filter tasks modified before DATE (YYYY-MM-DD or RFC3339).
+
+  --modified-after=DATE
+    Filter tasks modified after DATE (YYYY-MM-DD or RFC3339).
+
+  --due-before=DATE
+    Filter tasks due before DATE (YYYY-MM-DD).
+
+  --start-before=DATE
+    Filter tasks scheduled before DATE (YYYY-MM-DD).
+
+  --has-url
+    Filter tasks with URLs in notes.
+
+  --limit=N
+    Limit number of results (0 = no limit). Default: 200.
+
+  --offset=N
+    Offset results for pagination.
+
+  --sort=FIELDS
+    Sort by fields (e.g. created,-deadline,title).
 
   --recursive
     Include checklist items in JSON output.
@@ -1185,8 +1265,14 @@ OPTIONS
   --all
     Include completed, canceled, and trashed tasks.
 
+  --format=FORMAT
+    Output format: table, json, jsonl, csv.
+
+  --select=FIELDS
+    Select fields (comma-separated).
+
   --json
-    Output JSON.
+    Output JSON (alias for --format json).
 
   --no-header
     Suppress the header row.
@@ -1210,7 +1296,10 @@ SYNOPSIS
   things update [OPTIONS...] [--] [-|TITLE]
 
 DESCRIPTION
-  Updates an existing todo identified by {{BT}}--id={{BT}}.
+  Updates an existing todo identified by {{BT}}--id={{BT}}. To update multiple
+  todos, omit {{BT}}--id={{BT}} and provide query filters (same as
+  {{BT}}things tasks{{BT}}). Use {{BT}}--yes{{BT}} to confirm bulk updates;
+  {{BT}}--dry-run{{BT}} shows a preview.
 
   If {{BT}}-{{BT}} is given as a title, it is read from STDIN. When titles have
   multiple lines of text, the first is set as the todo's title and the
@@ -1230,12 +1319,18 @@ AUTHORIZATION
     3. Copy the token (or enable "Allow 'things' CLI to access Things").
 
 OPTIONS
+  --db=PATH
+    Path to the Things database. Overrides the THINGSDB environment variable.
+
   --auth-token=TOKEN
     The Things URL scheme authorization token. Required. See below for more
     information on authorization. If not provided, uses THINGS_AUTH_TOKEN.
 
   --id=ID
-    The ID of the todo to update. Required.
+    The ID of the todo to update. Required for single updates.
+
+  --yes
+    Confirm bulk update.
 
   --notes=NOTES
     The notes of the todo. This will replace the existing notes. Maximum
@@ -1356,6 +1451,53 @@ EXAMPLES
 
 SEE ALSO
   Authorization: https://culturedcode.com/things/support/articles/2803573/#overview-authorization
+`
+
+const deleteHelp = `Usage: things delete [OPTIONS...]
+
+NAME
+  things delete - move todos to Trash
+
+SYNOPSIS
+  things delete [OPTIONS...]
+
+DESCRIPTION
+  Moves todos to Trash using AppleScript. Provide {{BT}}--id={{BT}} for a single
+  todo or use query filters (same as {{BT}}things tasks{{BT}}) for bulk delete.
+  Use {{BT}}--dry-run{{BT}} to preview matches and {{BT}}--yes{{BT}} to confirm
+  bulk actions.
+
+OPTIONS
+  --db=PATH
+    Path to the Things database. Overrides the THINGSDB environment variable.
+
+  --id=ID
+    The ID of the todo to delete. Takes precedence over query filters.
+
+  --yes
+    Confirm bulk delete.
+`
+
+const undoHelp = `Usage: things undo [OPTIONS...]
+
+NAME
+  things undo - undo the last bulk action
+
+SYNOPSIS
+  things undo [OPTIONS...]
+
+DESCRIPTION
+  Replays the last bulk update or trash action recorded by things3-cli.
+  Undoing updates requires a Things URL scheme token. Undoing trash recreates
+  tasks as new items.
+
+OPTIONS
+  --auth-token=TOKEN
+    The Things URL scheme authorization token. If not provided, uses
+    THINGS_AUTH_TOKEN.
+
+  --yes
+    Confirm undo for multiple tasks.
 `
 
 const updateAreaHelp = `Usage: things update-area [OPTIONS...] [--] [-|TITLE]

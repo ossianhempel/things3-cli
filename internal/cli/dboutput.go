@@ -59,24 +59,12 @@ func printTags(out io.Writer, tags []db.Tag, asJSON bool, noHeader bool) error {
 	return w.Flush()
 }
 
-func printTasks(out io.Writer, tasks []db.Task, asJSON bool, noHeader bool) error {
-	if asJSON {
-		enc := json.NewEncoder(out)
-		return enc.Encode(tasks)
-	}
-	w := tabwriter.NewWriter(out, 0, 2, 2, ' ', 0)
-	if !noHeader {
-		fmt.Fprintln(w, "UUID\tTITLE\tPROJECT\tAREA\tHEADING\tSTATUS\tTRASHED")
-	}
-	for _, t := range tasks {
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%t\n",
-			t.UUID, t.Title, t.ProjectTitle, t.AreaTitle, t.HeadingTitle, db.StatusLabel(t.Status), t.Trashed)
-	}
-	return w.Flush()
+func printTasks(out io.Writer, tasks []db.Task, opts TaskOutputOptions) error {
+	return writeTasks(out, tasks, opts)
 }
 
-func printTaskSections(out io.Writer, sections []TaskSection, asJSON bool, noHeader bool) error {
-	if asJSON {
+func printTaskSections(out io.Writer, sections []TaskSection, opts TaskOutputOptions) error {
+	if opts.Format == "json" {
 		enc := json.NewEncoder(out)
 		return enc.Encode(sections)
 	}
@@ -88,7 +76,7 @@ func printTaskSections(out io.Writer, sections []TaskSection, asJSON bool, noHea
 		if len(section.Items) == 0 {
 			continue
 		}
-		if err := printTasks(out, section.Items, false, noHeader); err != nil {
+		if err := printTasks(out, section.Items, TaskOutputOptions{Format: "table", NoHeader: opts.NoHeader, Select: opts.Select}); err != nil {
 			return err
 		}
 	}

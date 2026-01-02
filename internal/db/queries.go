@@ -175,6 +175,25 @@ func (s *Store) Tasks(filter TaskFilter) ([]Task, error) {
 	return s.queryTasks("", nil, filter, "")
 }
 
+// TaskByID returns a single task by UUID.
+func (s *Store) TaskByID(id string) (*Task, error) {
+	if strings.TrimSpace(id) == "" {
+		return nil, sql.ErrNoRows
+	}
+	filter := TaskFilter{
+		IncludeTrashed:        true,
+		ExcludeTrashedContext: false,
+	}
+	tasks, err := s.queryTasks("t.uuid = ?", []any{id}, filter, "")
+	if err != nil {
+		return nil, err
+	}
+	if len(tasks) == 0 {
+		return nil, sql.ErrNoRows
+	}
+	return &tasks[0], nil
+}
+
 // TodayTasks returns tasks that belong in Today according to Things rules.
 func (s *Store) TodayTasks(filter TaskFilter) ([]Task, error) {
 	todayExpr := thingsDateTodayExpr()
@@ -237,6 +256,9 @@ func (s *Store) DeadlinesTasks(filter TaskFilter) ([]Task, error) {
 	tasks, err := s.queryTasks("t.deadline IS NOT NULL", nil, filter, "")
 	if err != nil {
 		return nil, err
+	}
+	if filter.Order != "" {
+		return tasks, nil
 	}
 	sort.Slice(tasks, func(i, j int) bool {
 		return tasks[i].Deadline < tasks[j].Deadline
@@ -615,15 +637,57 @@ func (s *Store) queryTasks(where string, args []any, filter TaskFilter, order st
 		like := "%" + filter.Search + "%"
 		params = append(params, like, like, like)
 	}
+	if filter.CreatedAfter != nil {
+		b.WriteString(" AND t.creationDate >= ?")
+		params = append(params, *filter.CreatedAfter)
+	}
+	if filter.CreatedBefore != nil {
+		b.WriteString(" AND t.creationDate < ?")
+		params = append(params, *filter.CreatedBefore)
+	}
+	if filter.ModifiedAfter != nil {
+		b.WriteString(" AND t.userModificationDate >= ?")
+		params = append(params, *filter.ModifiedAfter)
+	}
+	if filter.ModifiedBefore != nil {
+		b.WriteString(" AND t.userModificationDate < ?")
+		params = append(params, *filter.ModifiedBefore)
+	}
+	if filter.DueBefore != nil {
+		b.WriteString(" AND t.deadline IS NOT NULL AND t.deadline <= ?")
+		params = append(params, *filter.DueBefore)
+	}
+	if filter.StartBefore != nil {
+		b.WriteString(" AND t.startDate IS NOT NULL AND t.startDate <= ?")
+		params = append(params, *filter.StartBefore)
+	}
+	if filter.HasURL != nil {
+		if *filter.HasURL {
+			b.WriteString(" AND (IFNULL(t.notes, '') LIKE '%http://%' OR IFNULL(t.notes, '') LIKE '%https://%')")
+		} else {
+			b.WriteString(" AND (IFNULL(t.notes, '') NOT LIKE '%http://%' AND IFNULL(t.notes, '') NOT LIKE '%https://%')")
+		}
+	}
 	b.WriteString(" AND t.rt1_recurrenceRule IS NULL")
 
-	if order == "" {
-		order = "t.\"index\""
+	orderClause := order
+	if filter.Order != "" {
+		orderClause = filter.Order
 	}
-	b.WriteString(" ORDER BY " + order)
+	if orderClause == "" {
+		orderClause = "t.\"index\""
+	}
+	b.WriteString(" ORDER BY " + orderClause)
 	if filter.Limit > 0 {
 		b.WriteString(" LIMIT ?")
 		params = append(params, filter.Limit)
+		if filter.Offset > 0 {
+			b.WriteString(" OFFSET ?")
+			params = append(params, filter.Offset)
+		}
+	} else if filter.Offset > 0 {
+		b.WriteString(" LIMIT -1 OFFSET ?")
+		params = append(params, filter.Offset)
 	}
 
 	rows, err := s.conn.Query(b.String(), params...)

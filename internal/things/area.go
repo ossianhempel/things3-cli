@@ -95,8 +95,3 @@ func areaTarget(id string, title string) string {
 	}
 	return fmt.Sprintf("first area whose id is \"%s\"", escapeAppleScriptString(id))
 }
-
-func escapeAppleScriptString(input string) string {
-	replaced := strings.ReplaceAll(input, "\\", "\\\\")
-	return strings.ReplaceAll(replaced, "\"", "\\\"")
-}

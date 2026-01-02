@@ -123,10 +123,10 @@ func (s *Store) projectChildren(projectID string, filter TaskFilter) ([]TreeItem
 	}
 
 	for _, heading := range headings {
-			taskFilter := filter
-			taskFilter.ProjectID = projectID
-			taskFilter.Types = []int{TaskTypeTodo}
-			tasks, err := s.queryTasks("t.project = ? AND t.heading = ?", []any{projectID, heading.UUID}, taskFilter, "")
+		taskFilter := filter
+		taskFilter.ProjectID = projectID
+		taskFilter.Types = []int{TaskTypeTodo}
+		tasks, err := s.queryTasks("t.project = ? AND t.heading = ?", []any{projectID, heading.UUID}, taskFilter, "")
 		if err != nil {
 			return nil, err
 		}

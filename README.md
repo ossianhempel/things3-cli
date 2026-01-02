@@ -27,6 +27,8 @@ brew install ossianhempel/tap/things3-cli
 
 - `add`              Add a new todo
 - `update`           Update an existing todo (requires auth token)
+- `delete`           Move todos to Trash (bulk capable)
+- `undo`             Undo the last bulk update/trash action
 - `add-area`         Add a new area
 - `add-project`      Add a new project
 - `update-area`      Update an existing area

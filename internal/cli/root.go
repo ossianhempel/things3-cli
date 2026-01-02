@@ -57,6 +57,8 @@ func NewRoot(app *App) *cobra.Command {
 	cmd.AddCommand(NewUpdateCommand(app))
 	cmd.AddCommand(NewUpdateAreaCommand(app))
 	cmd.AddCommand(NewUpdateProjectCommand(app))
+	cmd.AddCommand(NewDeleteCommand(app))
+	cmd.AddCommand(NewUndoCommand(app))
 	cmd.AddCommand(NewShowCommand(app))
 	cmd.AddCommand(NewSearchCommand(app))
 
@@ -123,6 +125,10 @@ func NewRoot(app *App) *cobra.Command {
 				printHelp(app.Out, formatHelpText(updateAreaHelp, isTTY(app.Out)))
 			case "update-project":
 				printHelp(app.Out, formatHelpText(updateProjectHelp, isTTY(app.Out)))
+			case "delete":
+				printHelp(app.Out, formatHelpText(deleteHelp, isTTY(app.Out)))
+			case "undo":
+				printHelp(app.Out, formatHelpText(undoHelp, isTTY(app.Out)))
 			case "help":
 				printHelp(app.Out, formatHelpText(rootHelp, isTTY(app.Out)))
 			default:
@@ -193,6 +199,10 @@ func NewRoot(app *App) *cobra.Command {
 			printHelp(app.Out, formatHelpText(updateAreaHelp, isTTY(app.Out)))
 		case "update-project":
 			printHelp(app.Out, formatHelpText(updateProjectHelp, isTTY(app.Out)))
+		case "delete":
+			printHelp(app.Out, formatHelpText(deleteHelp, isTTY(app.Out)))
+		case "undo":
+			printHelp(app.Out, formatHelpText(undoHelp, isTTY(app.Out)))
 		default:
 			printHelp(app.Out, formatHelpText(rootHelp, isTTY(app.Out)))
 		}
