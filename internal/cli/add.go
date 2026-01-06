@@ -58,6 +58,7 @@ func NewAddCommand(app *App) *cobra.Command {
 				return nil
 			}
 
+			ensureThingsLaunched(app)
 			started := time.Now().Add(-2 * time.Second)
 			if err := openURL(app, url); err != nil {
 				return err

@@ -57,7 +57,7 @@ func (s *Store) RepeatTargetByID(id string) (*RepeatTarget, error) {
 	return &target, nil
 }
 
-// TasksByTitleSince returns tasks created with the given title after the timestamp.
+// TasksByTitleSince returns tasks created or modified with the given title after the timestamp.
 func (s *Store) TasksByTitleSince(title string, taskType int, since float64) ([]TaskMatch, error) {
 	if s == nil || s.conn == nil {
 		return nil, fmt.Errorf("database not initialized")
@@ -66,12 +66,17 @@ func (s *Store) TasksByTitleSince(title string, taskType int, since float64) ([]
 		return nil, fmt.Errorf("title required")
 	}
 	rows, err := s.conn.Query(
-		`SELECT uuid, creationDate
+		`SELECT uuid,
+			CASE
+				WHEN userModificationDate IS NOT NULL AND userModificationDate > 0 THEN userModificationDate
+				ELSE creationDate
+			END AS created
 		 FROM TMTask
-		 WHERE type = ? AND title = ? AND creationDate >= ?
-		 ORDER BY creationDate DESC`,
+		 WHERE type = ? AND lower(title) = lower(?) AND (creationDate >= ? OR userModificationDate >= ?)
+		 ORDER BY created DESC`,
 		taskType,
 		title,
+		since,
 		since,
 	)
 	if err != nil {
@@ -117,9 +122,6 @@ func (s *Store) ApplyRepeatRule(id string, update RepeatUpdate) error {
 	b.WriteString("rt1_instanceCreationCount = ?, ")
 	b.WriteString("rt1_afterCompletionReferenceDate = ?, ")
 	b.WriteString("rt1_nextInstanceStartDate = ?, ")
-	b.WriteString("start = 2, ")
-	b.WriteString("startDate = NULL, ")
-	b.WriteString("startBucket = 0, ")
 	if update.SetDeadline {
 		b.WriteString("deadline = ?, ")
 		b.WriteString("deadlineSuppressionDate = NULL, ")

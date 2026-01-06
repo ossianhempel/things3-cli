@@ -31,7 +31,7 @@ func waitForCreatedItem(store *db.Store, title string, taskType int, started tim
 	if strings.TrimSpace(title) == "" {
 		return "", fmt.Errorf("title required to locate created item")
 	}
-	deadline := time.Now().Add(10 * time.Second)
+	deadline := time.Now().Add(90 * time.Second)
 	since := float64(started.Unix())
 	for time.Now().Before(deadline) {
 		matches, err := store.TasksByTitleSince(title, taskType, since)

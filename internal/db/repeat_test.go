@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"path/filepath"
 	"testing"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -36,7 +37,7 @@ func TestApplyAndClearRepeatRule(t *testing.T) {
 	);`); err != nil {
 		t.Fatalf("create schema: %v", err)
 	}
-	if _, err := conn.Exec(`INSERT INTO TMTask (uuid, title, type, status, trashed) VALUES ('T1', 'Test', ?, ?, 0);`, TaskTypeTodo, StatusIncomplete); err != nil {
+	if _, err := conn.Exec(`INSERT INTO TMTask (uuid, title, type, status, trashed, start, startDate, startBucket) VALUES ('T1', 'Test', ?, ?, 0, 1, 123, 4);`, TaskTypeTodo, StatusIncomplete); err != nil {
 		t.Fatalf("insert task: %v", err)
 	}
 	if err := conn.Close(); err != nil {
@@ -75,14 +76,14 @@ func TestApplyAndClearRepeatRule(t *testing.T) {
 	if err := store.conn.QueryRow(`SELECT start, startDate, startBucket, rt1_recurrenceRule, deadline, userModificationDate FROM TMTask WHERE uuid = 'T1'`).Scan(&start, &startDay, &bucket, &rule, &dbDeadline, &modified); err != nil {
 		t.Fatalf("select updated: %v", err)
 	}
-	if start != 2 {
-		t.Fatalf("expected start=2, got %d", start)
+	if start != 1 {
+		t.Fatalf("expected start=1, got %d", start)
 	}
-	if startDay.Valid {
-		t.Fatalf("expected startDate NULL, got %d", startDay.Int64)
+	if !startDay.Valid || startDay.Int64 != 123 {
+		t.Fatalf("expected startDate=123, got %v", startDay)
 	}
-	if bucket != 0 {
-		t.Fatalf("expected startBucket=0, got %d", bucket)
+	if bucket != 4 {
+		t.Fatalf("expected startBucket=4, got %d", bucket)
 	}
 	if len(rule) == 0 {
 		t.Fatalf("expected recurrence rule bytes")
@@ -106,5 +107,51 @@ func TestApplyAndClearRepeatRule(t *testing.T) {
 	}
 	if dbDeadline.Valid {
 		t.Fatalf("expected deadline cleared")
+	}
+}
+
+func TestTasksByTitleSinceUsesModificationDate(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "things.sqlite3")
+	conn, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatalf("open db: %v", err)
+	}
+	if _, err := conn.Exec(`CREATE TABLE TMTask (
+		uuid TEXT PRIMARY KEY,
+		title TEXT,
+		type INTEGER,
+		creationDate REAL,
+		userModificationDate REAL
+	);`); err != nil {
+		t.Fatalf("create schema: %v", err)
+	}
+
+	now := float64(time.Now().Unix())
+	old := now - 120
+	if _, err := conn.Exec(`INSERT INTO TMTask (uuid, title, type, creationDate, userModificationDate) VALUES ('T1', 'Repeat Me', ?, ?, ?);`, TaskTypeTodo, old, now); err != nil {
+		t.Fatalf("insert task: %v", err)
+	}
+	if _, err := conn.Exec(`INSERT INTO TMTask (uuid, title, type, creationDate, userModificationDate) VALUES ('T2', 'Repeat Me', ?, ?, ?);`, TaskTypeTodo, old, old); err != nil {
+		t.Fatalf("insert task: %v", err)
+	}
+	if err := conn.Close(); err != nil {
+		t.Fatalf("close db: %v", err)
+	}
+
+	store, err := Open(path)
+	if err != nil {
+		t.Fatalf("open store: %v", err)
+	}
+	defer store.Close()
+
+	matches, err := store.TasksByTitleSince("Repeat Me", TaskTypeTodo, now-10)
+	if err != nil {
+		t.Fatalf("TasksByTitleSince: %v", err)
+	}
+	if len(matches) != 1 {
+		t.Fatalf("expected 1 match, got %d", len(matches))
+	}
+	if matches[0].UUID != "T1" {
+		t.Fatalf("expected T1, got %s", matches[0].UUID)
 	}
 }
