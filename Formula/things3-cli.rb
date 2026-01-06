@@ -1,16 +1,20 @@
 class Things3Cli < Formula
   desc "CLI for Things 3"
   homepage "https://github.com/ossianhempel/things3-cli"
-  url "https://github.com/ossianhempel/things3-cli/archive/7a0a4447170e7a54ece9b33fce55d1dc6d696726.tar.gz"
-  sha256 "9d503c8c8112d933946e3364ac6cb3ee90b9c86cc6bdd9644ee8fe64853efff2"
-  version "20260102104112"
+  version "0.1.0"
 
-  depends_on "go" => :build
+  on_macos do
+    if Hardware::CPU.arm?
+      url "https://github.com/ossianhempel/things3-cli/releases/download/v0.1.0/things-0.1.0-darwin-arm64.tar.gz"
+      sha256 "ee98aa7e5656475bbe7598251576529db2f45a15e292d20b3fefa12e867889d4"
+    else
+      url "https://github.com/ossianhempel/things3-cli/releases/download/v0.1.0/things-0.1.0-darwin-amd64.tar.gz"
+      sha256 "69cc7310b88159ed480967019a9ba1d0341ab54f07692f4c36a29903a84ad129"
+    end
+  end
 
   def install
-    ld_version = "7a0a444"
-    ldflags = "-s -w -X github.com/ossianhempel/things3-cli/internal/cli.Version=#{ld_version}"
-    system "go", "build", "-trimpath", "-ldflags", ldflags, "-o", bin/"things", "./cmd/things"
+    bin.install "things"
   end
 
   test do
