@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"strings"
-
 	"github.com/ossianhempel/things3-cli/internal/things"
 	"github.com/spf13/cobra"
 )
@@ -24,10 +22,6 @@ func NewUpdateProjectCommand(app *App) *cobra.Command {
 				opts.AuthToken = authTokenFromEnv()
 			}
 
-			hasChanges := hasProjectUpdateChanges(opts, rawInput)
-			if !hasChanges {
-				return nil
-			}
 			url, err := things.BuildUpdateProjectURL(opts, rawInput)
 			if err != nil {
 				return err
@@ -58,35 +52,4 @@ func NewUpdateProjectCommand(app *App) *cobra.Command {
 	flags.StringArrayVar(&opts.Todos, "todo", nil, "Todo title to add (repeatable)")
 
 	return cmd
-}
-
-func hasProjectUpdateChanges(opts things.UpdateProjectOptions, rawInput string) bool {
-	if strings.TrimSpace(rawInput) != "" {
-		return true
-	}
-	if opts.Notes != "" || opts.PrependNotes != "" || opts.AppendNotes != "" {
-		return true
-	}
-	if opts.When != "" || opts.Deadline != "" {
-		return true
-	}
-	if opts.Tags != "" || opts.AddTags != "" {
-		return true
-	}
-	if opts.AreaID != "" || opts.Area != "" {
-		return true
-	}
-	if opts.Completed || opts.Canceled {
-		return true
-	}
-	if opts.Reveal || opts.Duplicate {
-		return true
-	}
-	if opts.CompletionDate != "" || opts.CreationDate != "" {
-		return true
-	}
-	if len(opts.Todos) > 0 {
-		return true
-	}
-	return false
 }
