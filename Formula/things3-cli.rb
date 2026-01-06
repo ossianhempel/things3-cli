@@ -6,10 +6,10 @@ class Things3Cli < Formula
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/ossianhempel/things3-cli/releases/download/v0.1.0/things-0.1.0-darwin-arm64.tar.gz"
-      sha256 "ee98aa7e5656475bbe7598251576529db2f45a15e292d20b3fefa12e867889d4"
+      sha256 "db92fc7178a32ff338222631c7056f37690942a462f6cc876c7c66efd443f600"
     else
       url "https://github.com/ossianhempel/things3-cli/releases/download/v0.1.0/things-0.1.0-darwin-amd64.tar.gz"
-      sha256 "69cc7310b88159ed480967019a9ba1d0341ab54f07692f4c36a29903a84ad129"
+      sha256 "f40774fb313f7d840aa69f0519f69f3963736eb7b83455692b71bedf815d5747"
     end
   end
 
