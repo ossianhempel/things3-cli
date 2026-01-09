@@ -1,15 +1,15 @@
 class Things3Cli < Formula
   desc "CLI for Things 3"
   homepage "https://github.com/ossianhempel/things3-cli"
-  version "0.1.0"
+  version "0.2.0"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/ossianhempel/things3-cli/releases/download/v0.1.0/things-0.1.0-darwin-arm64.tar.gz"
-      sha256 "db92fc7178a32ff338222631c7056f37690942a462f6cc876c7c66efd443f600"
+      url "https://github.com/ossianhempel/things3-cli/releases/download/v0.2.0/things-0.2.0-darwin-arm64.tar.gz"
+      sha256 "e6b84fee29e83cb39dc4b6a72480a6de05fc5876723dcc1f0a8e4e7c5f7f783f"
     else
-      url "https://github.com/ossianhempel/things3-cli/releases/download/v0.1.0/things-0.1.0-darwin-amd64.tar.gz"
-      sha256 "f40774fb313f7d840aa69f0519f69f3963736eb7b83455692b71bedf815d5747"
+      url "https://github.com/ossianhempel/things3-cli/releases/download/v0.2.0/things-0.2.0-darwin-amd64.tar.gz"
+      sha256 "ce9e1dadf7198c5c2f51d5eaf94f925110cf0170565e4066624802c2b104ca72"
     end
   end
 
