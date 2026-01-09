@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -33,6 +35,9 @@ func verifyWhenApplied(store *db.Store, id string, expected string) error {
 	for time.Now().Before(deadline) {
 		task, err := store.TaskByID(id)
 		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return nil
+			}
 			return err
 		}
 		lastTask = task

@@ -172,15 +172,17 @@ func NewUpdateCommand(app *App) *cobra.Command {
 				}
 				var logStore *db.Store
 				if guardEvening {
-					store, _, err := db.OpenDefault(dbPath)
+					store, err := openVerifyStore(app, dbPath)
 					if err != nil {
-						return formatDBError(err)
+						return err
 					}
-					logStore = store
-					if task, err := store.TaskByID(opts.ID); err == nil {
-						if err := validateEveningTask(*task, allowNonToday); err != nil {
-							store.Close()
-							return err
+					if store != nil {
+						logStore = store
+						if task, err := store.TaskByID(opts.ID); err == nil {
+							if err := validateEveningTask(*task, allowNonToday); err != nil {
+								store.Close()
+								return err
+							}
 						}
 					}
 				}
@@ -248,15 +250,17 @@ func NewUpdateCommand(app *App) *cobra.Command {
 				}
 				var logStore *db.Store
 				if guardEvening {
-					store, _, err := db.OpenDefault(dbPath)
+					store, err := openVerifyStore(app, dbPath)
 					if err != nil {
-						return formatDBError(err)
+						return err
 					}
-					logStore = store
-					if task, err := store.TaskByID(opts.ID); err == nil {
-						if err := validateEveningTask(*task, allowNonToday); err != nil {
-							store.Close()
-							return err
+					if store != nil {
+						logStore = store
+						if task, err := store.TaskByID(opts.ID); err == nil {
+							if err := validateEveningTask(*task, allowNonToday); err != nil {
+								store.Close()
+								return err
+							}
 						}
 					}
 				}
