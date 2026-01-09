@@ -53,6 +53,52 @@ func TestAddCommandWithTitle(t *testing.T) {
 	}
 }
 
+func TestAddCommandRejectsUnsafeTitle(t *testing.T) {
+	launcher := &recordLauncher{}
+	app := &App{
+		In:       strings.NewReader(""),
+		Out:      &bytes.Buffer{},
+		Err:      &bytes.Buffer{},
+		Launcher: launcher,
+	}
+
+	root := NewRoot(app)
+	root.SetArgs([]string{"add", "tag=work"})
+	root.SetOut(app.Out)
+	root.SetErr(app.Err)
+
+	if err := root.Execute(); err == nil {
+		t.Fatalf("expected error")
+	}
+	if len(launcher.args) != 0 {
+		t.Fatalf("expected no open invocation")
+	}
+}
+
+func TestAddCommandAllowsUnsafeTitleWithFlag(t *testing.T) {
+	launcher := &recordLauncher{}
+	app := &App{
+		In:       strings.NewReader(""),
+		Out:      &bytes.Buffer{},
+		Err:      &bytes.Buffer{},
+		Launcher: launcher,
+	}
+
+	root := NewRoot(app)
+	root.SetArgs([]string{"add", "--allow-unsafe-title", "tag=work"})
+	root.SetOut(app.Out)
+	root.SetErr(app.Err)
+
+	if err := root.Execute(); err != nil {
+		t.Fatalf("execute failed: %v", err)
+	}
+
+	url := requireOpenURL(t, launcher)
+	if !strings.Contains(url, "title=tag%3Dwork") {
+		t.Fatalf("expected title in url, got %q", url)
+	}
+}
+
 func TestAddCommandReadsStdin(t *testing.T) {
 	launcher := &recordLauncher{}
 	app := &App{

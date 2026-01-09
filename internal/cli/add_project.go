@@ -8,6 +8,7 @@ import (
 // NewAddProjectCommand builds the add-project subcommand.
 func NewAddProjectCommand(app *App) *cobra.Command {
 	opts := things.AddProjectOptions{}
+	var allowUnsafeTitle bool
 
 	cmd := &cobra.Command{
 		Use:     "add-project [OPTIONS...] [-|TITLE]",
@@ -16,6 +17,13 @@ func NewAddProjectCommand(app *App) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			rawInput, err := readInput(app.In, args)
 			if err != nil {
+				return err
+			}
+			title := extractTitle(rawInput, "")
+			if err := guardUnsafeTitle(title, allowUnsafeTitle); err != nil {
+				return err
+			}
+			if err := validateWhenInput(opts.When); err != nil {
 				return err
 			}
 
@@ -38,6 +46,7 @@ func NewAddProjectCommand(app *App) *cobra.Command {
 	flags.StringVar(&opts.Tags, "tags", "", "Comma-separated tags")
 	flags.StringVar(&opts.When, "when", "", "When to schedule the project")
 	flags.StringArrayVar(&opts.Todos, "todo", nil, "Todo title to add (repeatable)")
+	flags.BoolVar(&allowUnsafeTitle, "allow-unsafe-title", false, "Allow titles that look like flag assignments")
 
 	return cmd
 }

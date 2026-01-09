@@ -31,7 +31,7 @@ type UpdateOptions struct {
 // BuildUpdateURL builds a Things URL for the update command.
 func BuildUpdateURL(opts UpdateOptions, rawInput string) (string, error) {
 	if opts.AuthToken == "" {
-		return "", errMissingAuthToken
+		return "", ErrMissingAuthToken
 	}
 	if opts.ID == "" {
 		return "", errMissingID

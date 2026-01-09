@@ -14,6 +14,9 @@ func NewUpdateCommand(app *App) *cobra.Command {
 	opts := things.UpdateOptions{}
 	repeatOpts := RepeatOptions{}
 	var dbPath string
+	var allowUnsafeTitle bool
+	var noVerify bool
+	var allowNonToday bool
 	var yes bool
 	queryOpts := TaskQueryOptions{
 		Status: "incomplete",
@@ -36,12 +39,25 @@ func NewUpdateCommand(app *App) *cobra.Command {
 			if repeatSpec.Enabled && strings.TrimSpace(opts.ID) == "" {
 				return fmt.Errorf("Error: repeating updates require --id")
 			}
-
-			if opts.AuthToken == "" {
-				opts.AuthToken = authTokenFromEnv()
+			title := extractTitle(rawInput, "")
+			if err := guardUnsafeTitle(title, allowUnsafeTitle); err != nil {
+				return err
+			}
+			if err := validateWhenInput(opts.When); err != nil {
+				return err
+			}
+			verifyWhen := resolveWhenValue(opts.When, opts.Later)
+			verifyWhenEnabled := verifyWhen != "" && !noVerify && !app.DryRun
+			guardEvening := strings.EqualFold(verifyWhen, "evening") && !allowNonToday
+			ensureAuth := func() error {
+				token, err := resolveAuthToken(app, opts.AuthToken)
+				if err != nil {
+					return err
+				}
+				opts.AuthToken = token
+				return nil
 			}
 
-			opts.AuthToken = strings.TrimSpace(opts.AuthToken)
 			queryOpts.HasURLSet = cmd.Flags().Changed("has-url")
 			changedStatus := cmd.Flags().Changed("status")
 			if strings.TrimSpace(opts.ID) != "" && hasExplicitSelector(map[string]bool{"status": changedStatus}, queryOpts) {
@@ -50,6 +66,9 @@ func NewUpdateCommand(app *App) *cobra.Command {
 
 			if strings.TrimSpace(opts.ID) == "" {
 				if !hasExplicitSelector(map[string]bool{"status": changedStatus}, queryOpts) {
+					if err := ensureAuth(); err != nil {
+						return err
+					}
 					url, err := things.BuildUpdateURL(opts, rawInput)
 					if err != nil {
 						return err
@@ -75,14 +94,25 @@ func NewUpdateCommand(app *App) *cobra.Command {
 				if app.DryRun {
 					return previewTasks(app.Out, tasks)
 				}
+				if guardEvening {
+					for _, task := range tasks {
+						if err := validateEveningTask(task, allowNonToday); err != nil {
+							return err
+						}
+					}
+				}
+				if verifyWhen != "" {
+					for _, task := range tasks {
+						if task.Repeating {
+							return fmt.Errorf("Error: cannot update when for repeating todos (id %s)", task.UUID)
+						}
+					}
+				}
 				if len(tasks) > 1 && !yes {
 					return fmt.Errorf("Error: %d tasks matched (rerun with --yes to apply)", len(tasks))
 				}
-				if opts.AuthToken == "" {
-					_, err := things.BuildUpdateURL(things.UpdateOptions{ID: "id"}, "")
-					if err != nil {
-						return err
-					}
+				if err := ensureAuth(); err != nil {
+					return err
 				}
 
 				entry := ActionEntry{
@@ -105,12 +135,34 @@ func NewUpdateCommand(app *App) *cobra.Command {
 					if err := openURL(app, url); err != nil {
 						return err
 					}
+					if verifyWhenEnabled {
+						if err := verifyWhenApplied(store, task.UUID, verifyWhen); err != nil {
+							return err
+						}
+					}
 				}
 				return nil
 			}
 
 			hasChanges := hasTodoUpdateChanges(opts, rawInput)
 			if !repeatSpec.Enabled {
+				if err := ensureAuth(); err != nil {
+					return err
+				}
+				var verifyStore *db.Store
+				if verifyWhenEnabled {
+					verifyStore, err = openVerifyStore(app, dbPath)
+					if err != nil {
+						return err
+					}
+					if verifyStore != nil {
+						defer verifyStore.Close()
+						if task, err := verifyStore.TaskByID(opts.ID); err == nil && task.Repeating {
+							return fmt.Errorf("Error: cannot update when for repeating todos (id %s)", opts.ID)
+						}
+					}
+				}
+
 				url, err := things.BuildUpdateURL(opts, rawInput)
 				if err != nil {
 					return err
@@ -118,17 +170,29 @@ func NewUpdateCommand(app *App) *cobra.Command {
 				if app.DryRun {
 					return openURL(app, url)
 				}
-
-				if opts.AuthToken == "" {
-					_, err := things.BuildUpdateURL(things.UpdateOptions{ID: opts.ID}, "")
+				var logStore *db.Store
+				if guardEvening {
+					store, _, err := db.OpenDefault(dbPath)
 					if err != nil {
-						return err
+						return formatDBError(err)
+					}
+					logStore = store
+					if task, err := store.TaskByID(opts.ID); err == nil {
+						if err := validateEveningTask(*task, allowNonToday); err != nil {
+							store.Close()
+							return err
+						}
 					}
 				}
 
-				store, _, err := db.OpenDefault(dbPath)
-				if err == nil {
-					if task, err := store.TaskByID(opts.ID); err == nil {
+				if logStore == nil {
+					logStore, _, err = db.OpenDefault(dbPath)
+					if err != nil {
+						logStore = nil
+					}
+				}
+				if logStore != nil {
+					if task, err := logStore.TaskByID(opts.ID); err == nil {
 						entry := ActionEntry{
 							Type:  ActionUpdate,
 							Items: []ActionItem{taskToActionItem(*task)},
@@ -137,13 +201,38 @@ func NewUpdateCommand(app *App) *cobra.Command {
 							fmt.Fprintf(app.Err, "Warning: failed to write action log: %v\n", err)
 						}
 					}
-					store.Close()
+					logStore.Close()
 				}
 
-				return openURL(app, url)
+				if err := openURL(app, url); err != nil {
+					return err
+				}
+				if verifyWhenEnabled && verifyStore != nil {
+					if err := verifyWhenApplied(verifyStore, opts.ID, verifyWhen); err != nil {
+						return err
+					}
+				}
+				return nil
 			}
 
 			if hasChanges {
+				if err := ensureAuth(); err != nil {
+					return err
+				}
+				var verifyStore *db.Store
+				if verifyWhenEnabled {
+					verifyStore, err = openVerifyStore(app, dbPath)
+					if err != nil {
+						return err
+					}
+					if verifyStore != nil {
+						defer verifyStore.Close()
+						if task, err := verifyStore.TaskByID(opts.ID); err == nil && task.Repeating {
+							return fmt.Errorf("Error: cannot update when for repeating todos (id %s)", opts.ID)
+						}
+					}
+				}
+
 				url, err := things.BuildUpdateURL(opts, rawInput)
 				if err != nil {
 					return err
@@ -157,17 +246,29 @@ func NewUpdateCommand(app *App) *cobra.Command {
 					}
 					return nil
 				}
-
-				if opts.AuthToken == "" {
-					_, err := things.BuildUpdateURL(things.UpdateOptions{ID: opts.ID}, "")
+				var logStore *db.Store
+				if guardEvening {
+					store, _, err := db.OpenDefault(dbPath)
 					if err != nil {
-						return err
+						return formatDBError(err)
+					}
+					logStore = store
+					if task, err := store.TaskByID(opts.ID); err == nil {
+						if err := validateEveningTask(*task, allowNonToday); err != nil {
+							store.Close()
+							return err
+						}
 					}
 				}
 
-				store, _, err := db.OpenDefault(dbPath)
-				if err == nil {
-					if task, err := store.TaskByID(opts.ID); err == nil {
+				if logStore == nil {
+					logStore, _, err = db.OpenDefault(dbPath)
+					if err != nil {
+						logStore = nil
+					}
+				}
+				if logStore != nil {
+					if task, err := logStore.TaskByID(opts.ID); err == nil {
 						entry := ActionEntry{
 							Type:  ActionUpdate,
 							Items: []ActionItem{taskToActionItem(*task)},
@@ -176,11 +277,16 @@ func NewUpdateCommand(app *App) *cobra.Command {
 							fmt.Fprintf(app.Err, "Warning: failed to write action log: %v\n", err)
 						}
 					}
-					store.Close()
+					logStore.Close()
 				}
 
 				if err := openURL(app, url); err != nil {
 					return err
+				}
+				if verifyWhenEnabled && verifyStore != nil {
+					if err := verifyWhenApplied(verifyStore, opts.ID, verifyWhen); err != nil {
+						return err
+					}
 				}
 			} else if app.DryRun {
 				fmt.Fprintf(app.Out, "Would update repeating rule for %s\n", opts.ID)
@@ -238,6 +344,9 @@ func NewUpdateCommand(app *App) *cobra.Command {
 	flags.StringArrayVar(&opts.PrependChecklistItems, "prepend-checklist-item", nil, "Prepend checklist item (repeatable)")
 	flags.StringArrayVar(&opts.AppendChecklistItems, "append-checklist-item", nil, "Append checklist item (repeatable)")
 	flags.BoolVar(&yes, "yes", false, "Confirm bulk update")
+	flags.BoolVar(&allowUnsafeTitle, "allow-unsafe-title", false, "Allow titles that look like flag assignments")
+	flags.BoolVar(&noVerify, "no-verify", false, "Skip verification of when updates against the Things database")
+	flags.BoolVar(&allowNonToday, "allow-non-today", false, "Allow moving non-today tasks to This Evening")
 	addRepeatFlags(cmd, &repeatOpts, true)
 	addTaskQueryFlags(cmd, &queryOpts, true, true)
 

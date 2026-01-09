@@ -8,6 +8,7 @@ import (
 // NewUpdateProjectCommand builds the update-project subcommand.
 func NewUpdateProjectCommand(app *App) *cobra.Command {
 	opts := things.UpdateProjectOptions{}
+	var allowUnsafeTitle bool
 
 	cmd := &cobra.Command{
 		Use:   "update-project [OPTIONS...] [--] [-|TITLE]",
@@ -17,10 +18,19 @@ func NewUpdateProjectCommand(app *App) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
-			if opts.AuthToken == "" {
-				opts.AuthToken = authTokenFromEnv()
+			title := extractTitle(rawInput, "")
+			if err := guardUnsafeTitle(title, allowUnsafeTitle); err != nil {
+				return err
 			}
+			if err := validateWhenInput(opts.When); err != nil {
+				return err
+			}
+
+			token, err := resolveAuthToken(app, opts.AuthToken)
+			if err != nil {
+				return err
+			}
+			opts.AuthToken = token
 
 			url, err := things.BuildUpdateProjectURL(opts, rawInput)
 			if err != nil {
@@ -50,6 +60,7 @@ func NewUpdateProjectCommand(app *App) *cobra.Command {
 	flags.StringVar(&opts.CompletionDate, "completion-date", "", "Completion date (ISO8601)")
 	flags.StringVar(&opts.CreationDate, "creation-date", "", "Creation date (ISO8601)")
 	flags.StringArrayVar(&opts.Todos, "todo", nil, "Todo title to add (repeatable)")
+	flags.BoolVar(&allowUnsafeTitle, "allow-unsafe-title", false, "Allow titles that look like flag assignments")
 
 	return cmd
 }

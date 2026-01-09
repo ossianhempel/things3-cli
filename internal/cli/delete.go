@@ -69,8 +69,18 @@ func NewDeleteCommand(app *App) *cobra.Command {
 			if app.DryRun {
 				return previewTasks(app.Out, tasks)
 			}
-			if len(tasks) > 1 && !yes {
-				return fmt.Errorf("Error: %d tasks matched (rerun with --yes to apply)", len(tasks))
+			if !yes {
+				kind := "todo"
+				if len(tasks) != 1 {
+					kind = "todos"
+				}
+				kind = fmt.Sprintf("%d %s", len(tasks), kind)
+				if strings.TrimSpace(confirm) == "" && !isInputTTY(app.In) {
+					return fmt.Errorf("Error: Must specify --confirm=delete or --yes to delete %s when not running interactively (or use --dry-run to preview)", kind)
+				}
+				if err := confirmDelete(app, kind, "delete", confirm); err != nil {
+					return err
+				}
 			}
 
 			entry := ActionEntry{

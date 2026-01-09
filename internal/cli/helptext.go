@@ -1605,6 +1605,9 @@ OPTIONS
     create multiple checklist rows). Takes priority over title, notes, or
     checklist-items.
 
+  --allow-unsafe-title
+    Allow titles that look like flag assignments (for example, "tag=work").
+
 EXAMPLES
   things add "Finish add to Things script"
 
@@ -1647,6 +1650,9 @@ DESCRIPTION
 OPTIONS
   --tags=TAG1[,TAG2,TAG3...]
     Comma separated strings corresponding to the titles of tags. Optional.
+
+  --allow-unsafe-title
+    Allow titles that look like flag assignments (for example, "tag=work").
 
 EXAMPLES
   things add-area "Health"
@@ -1737,6 +1743,9 @@ OPTIONS
   --todo=TITLE
     Title of a todo to add to the project. Can be specified more than once
     to add multiple todos. Optional.
+
+  --allow-unsafe-title
+    Allow titles that look like flag assignments (for example, "tag=work").
 
 EXAMPLES
   things add-project "Take over the world"
@@ -1930,6 +1939,9 @@ OPTIONS
   --yes
     Confirm bulk update.
 
+  --allow-unsafe-title
+    Allow titles that look like flag assignments (for example, "tag=work").
+
   --notes=NOTES
     The notes of the todo. This will replace the existing notes. Maximum
     unencoded length: 10,000 characters. Optional.
@@ -1952,6 +1964,12 @@ OPTIONS
   --later
     Move the todo to This Evening (alias for {{BT}}--when=evening{{BT}}).
     Optional.
+
+  --allow-non-today
+    Allow moving non-today tasks to This Evening.
+
+  --no-verify
+    Skip verification of when updates against the Things database.
 
   --deadline=DATE
     The deadline to apply to the todo. This field cannot be updated on
@@ -2083,11 +2101,12 @@ SYNOPSIS
 DESCRIPTION
   Deletes todos using AppleScript. Provide {{BT}}--id={{BT}} or a title for a
   single todo, or use query filters (same as {{BT}}things tasks{{BT}}) for bulk
-  delete. Use {{BT}}--dry-run{{BT}} to preview matches and {{BT}}--yes{{BT}} to
-  confirm bulk actions.
+  delete. Use {{BT}}--dry-run{{BT}} to preview matches and confirm query deletes
+  with {{BT}}--yes{{BT}} or {{BT}}--confirm=delete{{BT}}.
 
-  When running interactively, you will be prompted to confirm single deletes.
-  For non-interactive use, pass {{BT}}--confirm={{BT}} with the todo ID or title.
+  When running interactively, you will be prompted to confirm deletes.
+  For non-interactive use, pass {{BT}}--confirm={{BT}} with the todo ID or title,
+  or {{BT}}--confirm=delete{{BT}} for query deletes.
 
   The todo can be identified by {{BT}}--id={{BT}} or by title from the
   positional argument/STDIN. If {{BT}}-{{BT}} is given as a title, it is read
@@ -2101,8 +2120,8 @@ OPTIONS
     The ID of the todo to delete. Optional if a title is provided.
 
   --confirm=VALUE
-    Confirm deletion by typing the todo ID or title. Required in non-interactive
-    mode. Optional when prompted.
+    Confirm deletion by typing the todo ID or title. Use {{BT}}--confirm=delete{{BT}}
+    for query deletes. Required in non-interactive mode. Optional when prompted.
 
   --yes
     Confirm bulk delete.
@@ -2272,6 +2291,9 @@ OPTIONS
 
   --id=ID
     The ID of the project to update. Required.
+
+  --allow-unsafe-title
+    Allow titles that look like flag assignments (for example, "tag=work").
 
   --notes=NOTES
     The notes of the project. This will replace the existing notes. Maximum

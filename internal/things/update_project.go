@@ -27,7 +27,7 @@ type UpdateProjectOptions struct {
 // BuildUpdateProjectURL builds a Things URL for the update-project command.
 func BuildUpdateProjectURL(opts UpdateProjectOptions, rawInput string) (string, error) {
 	if opts.AuthToken == "" {
-		return "", errMissingAuthToken
+		return "", ErrMissingAuthToken
 	}
 	if opts.ID == "" {
 		return "", errMissingID

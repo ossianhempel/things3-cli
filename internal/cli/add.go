@@ -15,6 +15,7 @@ func NewAddCommand(app *App) *cobra.Command {
 	opts := things.AddOptions{}
 	repeatOpts := RepeatOptions{}
 	var dbPath string
+	var allowUnsafeTitle bool
 
 	cmd := &cobra.Command{
 		Use:   "add [OPTIONS...] [--] [-|TITLE]",
@@ -30,6 +31,12 @@ func NewAddCommand(app *App) *cobra.Command {
 				return err
 			}
 			title := extractTitle(rawInput, opts.TitlesRaw)
+			if err := guardUnsafeTitle(title, allowUnsafeTitle); err != nil {
+				return err
+			}
+			if err := validateWhenInput(opts.When); err != nil {
+				return err
+			}
 
 			if repeatSpec.Enabled {
 				if repeatSpec.Clear {
@@ -104,6 +111,7 @@ func NewAddCommand(app *App) *cobra.Command {
 	flags.StringVar(&opts.Tags, "tags", "", "Comma-separated tags")
 	flags.StringVar(&opts.TitlesRaw, "titles", "", "Comma-separated titles for multiple todos")
 	flags.StringVar(&opts.UseClipboard, "use-clipboard", "", "Use clipboard content")
+	flags.BoolVar(&allowUnsafeTitle, "allow-unsafe-title", false, "Allow titles that look like flag assignments")
 	addRepeatFlags(cmd, &repeatOpts, false)
 
 	return cmd

@@ -38,15 +38,9 @@ func NewUndoCommand(app *App) *cobra.Command {
 
 			switch entry.Type {
 			case ActionUpdate:
-				token := strings.TrimSpace(authToken)
-				if token == "" {
-					token = authTokenFromEnv()
-				}
-				if token == "" {
-					_, err := things.BuildUpdateURL(things.UpdateOptions{ID: "id"}, "")
-					if err != nil {
-						return err
-					}
+				token, err := resolveAuthToken(app, authToken)
+				if err != nil {
+					return err
 				}
 				warnIncomplete := 0
 				for _, item := range entry.Items {
