@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -106,10 +107,21 @@ func removeLastAction() error {
 	if err != nil {
 		return err
 	}
-	data, err := os.ReadFile(path)
+	return removeLastActionFromPath(path)
+}
+
+func removeLastActionFromPath(path string) error {
+	file, err := os.OpenFile(path, os.O_RDWR, 0)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
+
+	data, err := io.ReadAll(file)
+	if err != nil {
+		return err
+	}
+
 	lines := strings.Split(string(data), "\n")
 	for i := len(lines) - 1; i >= 0; i-- {
 		if strings.TrimSpace(lines[i]) != "" {
@@ -118,7 +130,14 @@ func removeLastAction() error {
 		}
 	}
 	content := strings.Join(lines, "\n")
-	return os.WriteFile(path, []byte(content), 0o644)
+
+	if _, err := file.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+	if _, err := file.WriteString(content); err != nil {
+		return err
+	}
+	return file.Truncate(int64(len(content)))
 }
 
 func taskToActionItem(task db.Task) ActionItem {
