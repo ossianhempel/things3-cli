@@ -69,20 +69,34 @@ Do not claim Homebrew is ready until the formula references the released tag and
 
 ## Publishing
 
-Local publish:
+Publishing is automated. Do **not** tag by hand and do **not** run the local
+publish path for normal releases. Instead:
+
+1. Land the changelog + formula bump on `main` via a release PR.
+2. On merge, `.github/workflows/release.yml` detects the new `## [X.Y.Z]`
+   CHANGELOG section, tags `vX.Y.Z` at the merge commit, runs tests, builds
+   artifacts, generates notes, and publishes `things3-cli vX.Y.Z`. The workflow
+   is idempotent: if the tag already exists it skips.
+3. Manual override only if needed: Actions → Release → Run workflow, enter the
+   version (`workflow_dispatch`).
+
+The legacy `git tag … && git push origin vX.Y.Z` and `./scripts/release.sh`
+paths still work but are not the standard flow.
+
+## Homebrew Tap (agent-driven, after the release is live)
+
+CI does not touch the tap. Once the GitHub release exists (so the released
+tarballs are downloadable and their checksums are final), the agent updates and
+pushes the tap:
 
 ```sh
-./scripts/release.sh vX.Y.Z
+./scripts/update-brew-formula.sh --version vX.Y.Z --tap-dir ~/Developer/homebrew-tap
+git -C ~/Developer/homebrew-tap add Formula/things3-cli.rb
+git -C ~/Developer/homebrew-tap commit -m "things3-cli vX.Y.Z"
+git -C ~/Developer/homebrew-tap push
 ```
 
-CI publish:
-
-```sh
-git tag vX.Y.Z
-git push origin vX.Y.Z
-```
-
-The release workflow also runs tests, builds artifacts, generates notes, and publishes the GitHub release.
+The maintainer never does this manually — the agent driving the release does.
 
 ## Post-Release Verification
 

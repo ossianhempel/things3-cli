@@ -1,9 +1,16 @@
 name: Release
 
+# Auto-releases on merge to main: when a commit lands on main that adds a new
+# "## [X.Y.Z]" section to CHANGELOG.md, this workflow tags vX.Y.Z and publishes
+# the GitHub release. It is idempotent — if the tag already exists (e.g. a later
+# CHANGELOG edit that only touches Unreleased), it skips. workflow_dispatch is
+# kept as a manual override.
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - CHANGELOG.md
   workflow_dispatch:
     inputs:
       version:
@@ -19,45 +26,66 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-
-      - name: Setup Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
-          go-version-file: go.mod
+          fetch-depth: 0
 
-      - name: Set version
+      - name: Resolve version
         id: version
         env:
           INPUT_VERSION: ${{ github.event.inputs.version }}
           EVENT_NAME: ${{ github.event_name }}
-          REF_NAME: ${{ github.ref_name }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            VERSION="v${INPUT_VERSION}"
+            VERSION="${INPUT_VERSION#v}"
           else
-            VERSION="${REF_NAME}"
+            # First semver section in the changelog (skips "## [Unreleased]").
+            VERSION=$(grep -m1 -E '^## \[[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md \
+              | sed -E 's/^## \[([0-9]+\.[0-9]+\.[0-9]+)\].*/\1/')
           fi
-          VERSION="${VERSION#v}"
+          if [ -z "$VERSION" ]; then
+            echo "Could not determine release version from CHANGELOG.md or input." >&2
+            exit 1
+          fi
+          TAG="v${VERSION}"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null \
+            || git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${TAG} already exists; nothing to release."
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "Will release ${TAG}."
+          fi
+
+      - name: Setup Go
+        if: steps.version.outputs.release == 'true'
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
 
       - name: Run tests
+        if: steps.version.outputs.release == 'true'
         run: go test ./...
 
       - name: Build release artifacts
+        if: steps.version.outputs.release == 'true'
         env:
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
         run: ./scripts/build-release.sh "$RELEASE_TAG"
 
       - name: Generate release notes
+        if: steps.version.outputs.release == 'true'
         env:
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
         run: ./scripts/release-notes.sh "$RELEASE_TAG" > dist/release-notes.md
 
       - name: Publish GitHub release
+        if: steps.version.outputs.release == 'true'
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
           name: things3-cli ${{ steps.version.outputs.tag }}
           body_path: dist/release-notes.md
           files: |
