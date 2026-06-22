@@ -87,6 +87,54 @@ func TestNormalizeDeadlineInputTimezoneLocalDate(t *testing.T) {
 	}
 }
 
+func TestNormalizeNaturalMonthDatesClampEndOfMonth(t *testing.T) {
+	withLocalTime(t, "Europe/Stockholm", func(_ time.Time) {
+		tests := []struct {
+			name  string
+			now   time.Time
+			input string
+			want  string
+		}{
+			{
+				name:  "next month clamps January 31 to February 28",
+				now:   time.Date(2026, 1, 31, 9, 30, 0, 0, time.Local),
+				input: "next month",
+				want:  "2026-02-28",
+			},
+			{
+				name:  "next month clamps January 31 to February 29 in leap year",
+				now:   time.Date(2028, 1, 31, 9, 30, 0, 0, time.Local),
+				input: "next month",
+				want:  "2028-02-29",
+			},
+			{
+				name:  "in two months clamps December 31 to February 28",
+				now:   time.Date(2025, 12, 31, 9, 30, 0, 0, time.Local),
+				input: "in 2 months",
+				want:  "2026-02-28",
+			},
+			{
+				name:  "in one month clamps January 30 to February 28",
+				now:   time.Date(2026, 1, 30, 9, 30, 0, 0, time.Local),
+				input: "in 1 month",
+				want:  "2026-02-28",
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				got, err := normalizeWhenInput(tt.input, tt.now)
+				if err != nil {
+					t.Fatalf("normalizeWhenInput failed: %v", err)
+				}
+				if got != tt.want {
+					t.Fatalf("got %q, want %q", got, tt.want)
+				}
+			})
+		}
+	})
+}
+
 func TestUpdateCommandDryRunShowsNormalizedNaturalDates(t *testing.T) {
 	withLocalTime(t, "Europe/Stockholm", func(_ time.Time) {
 		out := &bytes.Buffer{}

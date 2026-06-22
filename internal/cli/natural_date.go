@@ -77,7 +77,7 @@ func parseNaturalLocalDate(input string, now time.Time) (time.Time, error) {
 	case "next week":
 		return today.AddDate(0, 0, 7), nil
 	case "next month":
-		return today.AddDate(0, 1, 0), nil
+		return addMonthsClamped(today, 1), nil
 	case "next year":
 		return today.AddDate(1, 0, 0), nil
 	}
@@ -103,7 +103,7 @@ func parseNaturalLocalDate(input string, now time.Time) (time.Time, error) {
 		case "week":
 			return today.AddDate(0, 0, count*7), nil
 		case "month":
-			return today.AddDate(0, count, 0), nil
+			return addMonthsClamped(today, count), nil
 		case "year":
 			return today.AddDate(count, 0, 0), nil
 		default:
@@ -125,6 +125,17 @@ func nextWeekday(today time.Time, target time.Weekday) time.Time {
 		days = 7
 	}
 	return today.AddDate(0, 0, days)
+}
+
+func addMonthsClamped(date time.Time, months int) time.Time {
+	firstOfMonth := time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, date.Location())
+	targetMonth := firstOfMonth.AddDate(0, months, 0)
+	lastDay := targetMonth.AddDate(0, 1, -1).Day()
+	day := date.Day()
+	if day > lastDay {
+		day = lastDay
+	}
+	return time.Date(targetMonth.Year(), targetMonth.Month(), day, 0, 0, 0, 0, date.Location())
 }
 
 func looksExplicitDate(value string) bool {
