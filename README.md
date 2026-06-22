@@ -119,6 +119,30 @@ things update --id <uuid> --complete-checklist-item "Book hotel"
 things update --id <uuid> --incomplete-checklist-item "Book hotel"
 ```
 
+## Scheduling dates
+
+`--when` and `--deadline` accept explicit dates (`YYYY-MM-DD`) and the
+existing explicit date-time formats for scheduled reminders. They also accept a
+small deterministic set of natural-language dates on `add`, `add-project`,
+`update`, and `update-project`: `today`, `tomorrow`, `next <weekday>`,
+`next week`, `next month`, `next year`, and `in N day/week/month/year`.
+Natural-language dates are resolved in the local timezone and sent to Things as
+normalized `YYYY-MM-DD` values.
+
+Examples:
+
+```
+things add "Send invoice" --when tomorrow
+things add "Renew contract" --deadline "next Friday"
+things update --id <uuid> --when "in 2 weeks"
+```
+
+Ambiguous phrases are intentionally unsupported. Use an explicit date instead
+of phrases like `this Friday`, `later this week`, month names without a year,
+or natural-language times. `--when=evening`, `--when=anytime`,
+`--when=someday`, and `--when=inbox` remain Things scheduling list values, not
+parsed dates.
+
 ## Agent Skills
 
 This repo includes a Things agent skill at `skills/things/SKILL.md`.
@@ -144,5 +168,7 @@ Homebrew formula.
 - Delete commands prompt for confirmation when run interactively; pass
   `--confirm` in non-interactive scripts. Use `--dry-run` to preview.
 - Aliases: `create-project` -> `add-project`, `create-area` -> `add-area`.
-- Scheduling: use `--when=someday` to move to Someday; use `update --later`
-  (or `--when=evening`) to move to This Evening.
+- Scheduling: `--when`/`--deadline` accept explicit dates and supported
+  natural-language dates such as `tomorrow`, `next Friday`, and `in 2 weeks`.
+  Use `--when=someday` to move to Someday; use `update --later` (or
+  `--when=evening`) to move to This Evening.

@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/ossianhempel/things3-cli/internal/db"
 	"github.com/ossianhempel/things3-cli/internal/things"
@@ -43,13 +44,19 @@ func NewUpdateCommand(app *App) *cobra.Command {
 			if err := guardUnsafeTitle(title, allowUnsafeTitle); err != nil {
 				return err
 			}
-			if err := validateWhenInput(opts.When); err != nil {
-				return err
-			}
 			opts.NotesSet = cmd.Flags().Changed("notes")
 			opts.WhenSet = cmd.Flags().Changed("when")
 			opts.DeadlineSet = cmd.Flags().Changed("deadline")
 			opts.TagsSet = cmd.Flags().Changed("tags")
+			now := time.Now()
+			opts.When, err = normalizeWhenInput(opts.When, now)
+			if err != nil {
+				return err
+			}
+			opts.Deadline, err = normalizeDeadlineInput(opts.Deadline, now)
+			if err != nil {
+				return err
+			}
 			verifyWhen := resolveWhenValue(opts.When, opts.Later)
 			verifyWhenEnabled := verifyWhen != "" && !noVerify && !app.DryRun
 			guardEvening := strings.EqualFold(verifyWhen, "evening") && !allowNonToday

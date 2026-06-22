@@ -65,20 +65,3 @@ func resolveWhenValue(value string, later bool) string {
 	}
 	return ""
 }
-
-func validateWhenInput(value string) error {
-	value = strings.TrimSpace(value)
-	if value == "" {
-		return nil
-	}
-	switch strings.ToLower(value) {
-	case "today", "tomorrow", "evening", "someday", "anytime", "inbox":
-		return nil
-	default:
-		if _, _, err := parseDateOrTime(value); err != nil {
-			msg := strings.TrimPrefix(err.Error(), "Error: ")
-			return fmt.Errorf("Error: invalid --when value %q (%s)", value, msg)
-		}
-	}
-	return nil
-}

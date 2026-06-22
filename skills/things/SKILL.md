@@ -26,6 +26,7 @@ Write (URL scheme)
 - `things update --id <uuid> --notes "Updated notes"`
 - Clear notes by passing an explicit empty notes value: `things update --id <uuid> --notes ""`
 - Clear a deadline, scheduled date, or all tags the same way: `things update --id <uuid> --deadline=""`, `--when=""`, or `--tags=""` (also works for `update-project`)
+- Natural scheduling dates: `--when`/`--deadline` accept explicit dates plus `today`, `tomorrow`, `next <weekday>`, `next week/month/year`, and `in N day/week/month/year`; dry-run shows the normalized `YYYY-MM-DD` value.
 - Checklist status by exact title: `things update --id <uuid> --complete-checklist-item "Step 1"` or `things update --id <uuid> --incomplete-checklist-item "Step 1"`
 - Bulk update (preview then apply): `things update --query 'tag:work' --dry-run` then `things update --query 'tag:work' --yes --tags "Work"`
 - `things update-project --id <uuid> "New project title"`

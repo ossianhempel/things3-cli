@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"time"
+
 	"github.com/ossianhempel/things3-cli/internal/things"
 	"github.com/spf13/cobra"
 )
@@ -22,13 +24,19 @@ func NewUpdateProjectCommand(app *App) *cobra.Command {
 			if err := guardUnsafeTitle(title, allowUnsafeTitle); err != nil {
 				return err
 			}
-			if err := validateWhenInput(opts.When); err != nil {
-				return err
-			}
 			opts.NotesSet = cmd.Flags().Changed("notes")
 			opts.WhenSet = cmd.Flags().Changed("when")
 			opts.DeadlineSet = cmd.Flags().Changed("deadline")
 			opts.TagsSet = cmd.Flags().Changed("tags")
+			now := time.Now()
+			opts.When, err = normalizeWhenInput(opts.When, now)
+			if err != nil {
+				return err
+			}
+			opts.Deadline, err = normalizeDeadlineInput(opts.Deadline, now)
+			if err != nil {
+				return err
+			}
 
 			token, err := resolveAuthToken(app, opts.AuthToken)
 			if err != nil {

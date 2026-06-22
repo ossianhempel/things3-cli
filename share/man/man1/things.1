@@ -242,7 +242,8 @@ todo in the database\. Ignored if the date is in the future\.
 .LP
 .TP
 \fI\-\-deadline\[eq]DATE\fP
-The deadline to apply to the todo\.
+The deadline to apply to the todo\. Accepts YYYY\-MM\-DD or supported
+natural\-language dates such as tomorrow, next Friday, and in 2 weeks\.
 .LP
 .TP
 \fI\-\-heading\[eq]HEADING\fP
@@ -270,10 +271,10 @@ apply a tag if the specified tag doesn\[cq]t exist\.
 .LP
 .TP
 \fI\-\-when\[eq]DATE\[or]DATETIME\fP
-Possible values: today, tomorrow, evening, anytime, someday, a date
-string, or a date time string\. Using a date time string adds a reminder
-for that time\. The time component is ignored if anytime or someday is
-specified\.
+Possible values: a date string, a date time string, or supported
+natural\-language dates such as tomorrow, next Friday, and in 2 weeks\.
+Using a date time string adds a reminder for that time\. evening, anytime,
+someday, and inbox keep their Things scheduling\-list meaning\.
 .LP
 .TP
 \fI\-\-repeat\[eq]UNIT\fP
@@ -387,18 +388,20 @@ length: 10,000 characters\. Optional\.
 .LP
 .TP
 \fI\-\-when\[eq]DATE\[or]DATETIME\fP
-Set the when field of a todo\. Possible values: today, tomorrow,
-evening, someday, a date string, or a date time string\. Including a time
-adds a reminder for that time\. The time component is ignored if someday
-is specified\. An empty string (\fB--when=""\fR) clears the scheduled
-date\. This field cannot be updated on repeating todo\.
+Set the when field of a todo\. Possible values: a date string, a date
+time string, or supported natural\-language dates such as tomorrow, next
+Friday, and in 2 weeks\. Including a time adds a reminder for that time\.
+evening, someday, anytime, and inbox keep their Things scheduling\-list
+meaning\. An empty string (\fB--when=""\fR) clears the scheduled date\.
+This field cannot be updated on repeating todo\.
 Optional\.
 .LP
 .TP
 \fI\-\-deadline\[eq]DATE\fP
 The deadline to apply to the todo\. An empty string (\fB--deadline=""\fR)
 clears the deadline\. This field cannot be updated on
-repeating todo\. Optional\.
+repeating todo\. Accepts YYYY\-MM\-DD or supported natural\-language dates
+such as tomorrow, next Friday, and in 2 weeks\. Optional\.
 .LP
 .TP
 \fI\-\-tags\[eq]TAG1\[lB],TAG2,TAG3\.\.\.\[rB]\fP
@@ -661,7 +664,9 @@ canceled, or if the date is in the future\. Optional\.
 .LP
 .TP
 \fI\-\-deadline\[eq]DATE\fP
-The deadline to apply to the project\. Optional\.
+The deadline to apply to the project\. Accepts YYYY\-MM\-DD or supported
+natural\-language dates such as tomorrow, next Friday, and in 2 weeks\.
+Optional\.
 .LP
 .TP
 \fI\-\-notes\[eq]NOTES\fP
@@ -680,10 +685,10 @@ apply a tag if the specified tag doesn\[cq]t exist\. Optional\.
 .LP
 .TP
 \fI\-\-when\[eq]DATE\[or]DATETIME\fP
-Possible values: today, tomorrow, evening, anytime, someday, a date
-string, or a date time string\. Using a date time string adds a reminder
-for that time\. The time component is ignored if anytime or someday is
-specified\. Optional\.
+Possible values: a date string, a date time string, or supported
+natural\-language dates such as tomorrow, next Friday, and in 2 weeks\.
+Using a date time string adds a reminder for that time\. evening, anytime,
+someday, and inbox keep their Things scheduling\-list meaning\. Optional\.
 .LP
 .TP
 \fI\-\-todo\[eq]TITLE\fP
@@ -814,16 +819,19 @@ length: 10,000 characters\. Optional\.
 .LP
 .TP
 \fI\-\-when\[eq]DATE\[or]DATETIME\fP
-Set the when field of a project\. Possible values: today, tomorrow,
-evening, someday, a date string, or a date time string\. Including a time
-adds a reminder for that time\. The time component is ignored if someday
-is specified\. An empty string (\fB--when=""\fR) clears the scheduled
-date\. Optional\.
+Set the when field of a project\. Possible values: a date string, a date
+time string, or supported natural\-language dates such as tomorrow, next
+Friday, and in 2 weeks\. Including a time adds a reminder for that time\.
+evening, someday, anytime, and inbox keep their Things scheduling\-list
+meaning\. An empty string (\fB--when=""\fR) clears the scheduled date\.
+Optional\.
 .LP
 .TP
 \fI\-\-deadline\[eq]DATE\fP
 The deadline to apply to the project\. An empty string
-(\fB--deadline=""\fR) clears the deadline\. Optional\.
+(\fB--deadline=""\fR) clears the deadline\. Accepts YYYY\-MM\-DD or
+supported natural\-language dates such as tomorrow, next Friday, and in 2
+weeks\. Optional\.
 .LP
 .TP
 \fI\-\-tags\[eq]TAG1\[lB],TAG2,TAG3\.\.\.\[rB]\fP

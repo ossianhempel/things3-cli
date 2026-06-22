@@ -6,6 +6,8 @@ The format is based on Keep a Changelog, and this project adheres to
 Semantic Versioning.
 
 ## [Unreleased]
+- Added deterministic natural-language parsing for `--when` and `--deadline`
+  on task/project add and update flows.
 
 ## [0.3.0] - 2026-05-26
 - Added `templates` command to list repeating template tasks from the Things database.

@@ -1647,7 +1647,8 @@ OPTIONS
     todo in the database. Ignored if the date is in the future.
 
   --deadline=DATE
-    The deadline to apply to the todo.
+    The deadline to apply to the todo. Accepts YYYY-MM-DD or supported
+    natural-language dates such as tomorrow, next Friday, and in 2 weeks.
 
   --heading=HEADING
     The title of a heading within a project to add to. Ignored if a project
@@ -1669,10 +1670,10 @@ OPTIONS
     apply a tag if the specified tag doesn't exist.
 
   --when=DATE|DATETIME
-    Possible values: today, tomorrow, evening, anytime, someday, a date
-    string, or a date time string. Using a date time string adds a reminder
-    for that time. The time component is ignored if anytime or someday is
-    specified.
+    Possible values: a date string, a date time string, or supported
+    natural-language dates such as tomorrow, next Friday, and in 2 weeks.
+    Using a date time string adds a reminder for that time. evening,
+    anytime, someday, and inbox keep their Things scheduling-list meaning.
 
   --repeat=UNIT
     Create a repeating template. Units: day, week, month, year.
@@ -1800,7 +1801,9 @@ OPTIONS
     canceled, or if the date is in the future. Optional.
 
   --deadline=DATE
-    The deadline to apply to the project. Optional.
+    The deadline to apply to the project. Accepts YYYY-MM-DD or supported
+    natural-language dates such as tomorrow, next Friday, and in 2 weeks.
+    Optional.
 
   --notes=NOTES
     The text to use for the notes field of the project. Maximum unencoded
@@ -1815,10 +1818,11 @@ OPTIONS
     apply a tag if the specified tag doesn't exist. Optional.
 
   --when=DATE|DATETIME
-    Possible values: today, tomorrow, evening, anytime, someday, a date
-    string, or a date time string. Using a date time string adds a reminder
-    for that time. The time component is ignored if anytime or someday is
-    specified. Optional.
+    Possible values: a date string, a date time string, or supported
+    natural-language dates such as tomorrow, next Friday, and in 2 weeks.
+    Using a date time string adds a reminder for that time. evening,
+    anytime, someday, and inbox keep their Things scheduling-list meaning.
+    Optional.
 
   --repeat=UNIT
     Create a repeating template. Units: day, week, month, year.
@@ -2058,11 +2062,12 @@ OPTIONS
     length: 10,000 characters. Optional.
 
   --when=DATE|DATETIME
-    Set the when field of a todo. Possible values: today, tomorrow,
-    evening, someday, a date string, or a date time string. Including a time
-    adds a reminder for that time. The time component is ignored if someday
-    is specified. An empty string ({{BT}}--when=""{{BT}}) clears the
-    scheduled date. This field cannot be updated on repeating todo.
+    Set the when field of a todo. Possible values: a date string, a date
+    time string, or supported natural-language dates such as tomorrow, next
+    Friday, and in 2 weeks. Including a time adds a reminder for that time.
+    evening, someday, anytime, and inbox keep their Things scheduling-list
+    meaning. An empty string ({{BT}}--when=""{{BT}}) clears the scheduled
+    date. This field cannot be updated on repeating todo.
     Optional.
 
   --later
@@ -2078,7 +2083,9 @@ OPTIONS
   --deadline=DATE
     The deadline to apply to the todo. An empty string
     ({{BT}}--deadline=""{{BT}}) clears the deadline. This field cannot be
-    updated on repeating todo. Optional.
+    updated on repeating todo. Accepts YYYY-MM-DD or supported
+    natural-language dates such as tomorrow, next Friday, and in 2 weeks.
+    Optional.
 
   --tags=TAG1[,TAG2,TAG3...]
     Comma separated strings corresponding to the titles of tags. Replaces
@@ -2423,15 +2430,18 @@ OPTIONS
     length: 10,000 characters. Optional.
 
   --when=DATE|DATETIME
-    Set the when field of a project. Possible values: today, tomorrow,
-    evening, someday, a date string, or a date time string. Including a time
-    adds a reminder for that time. The time component is ignored if someday
-    is specified. An empty string ({{BT}}--when=""{{BT}}) clears the
-    scheduled date. Optional.
+    Set the when field of a project. Possible values: a date string, a date
+    time string, or supported natural-language dates such as tomorrow, next
+    Friday, and in 2 weeks. Including a time adds a reminder for that time.
+    evening, someday, anytime, and inbox keep their Things scheduling-list
+    meaning. An empty string ({{BT}}--when=""{{BT}}) clears the scheduled
+    date. Optional.
 
   --deadline=DATE
     The deadline to apply to the project. An empty string
-    ({{BT}}--deadline=""{{BT}}) clears the deadline. Optional.
+    ({{BT}}--deadline=""{{BT}}) clears the deadline. Accepts YYYY-MM-DD or
+    supported natural-language dates such as tomorrow, next Friday, and in 2
+    weeks. Optional.
 
   --tags=TAG1[,TAG2,TAG3...]
     Comma separated strings corresponding to the titles of tags. Replaces
