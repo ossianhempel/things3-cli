@@ -39,6 +39,11 @@ func writeTestDB(t *testing.T) string {
 			"index" INTEGER,
 			rt1_repeatingTemplate TEXT,
 			rt1_recurrenceRule BLOB,
+			rt1_instanceCreationStartDate INTEGER,
+			rt1_instanceCreationPaused INTEGER,
+			rt1_instanceCreationCount INTEGER,
+			rt1_afterCompletionReferenceDate INTEGER,
+			rt1_nextInstanceStartDate INTEGER,
 			repeater BLOB,
 			todayIndex INTEGER,
 			todayIndexReferenceDate INTEGER

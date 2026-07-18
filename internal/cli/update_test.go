@@ -2,9 +2,134 @@ package cli
 
 import (
 	"bytes"
+	"database/sql"
+	"encoding/json"
 	"strings"
 	"testing"
 )
+
+type triggerLauncher struct{ dbPath string }
+
+func (l *triggerLauncher) Open(args ...string) error {
+	conn, err := sql.Open("sqlite", l.dbPath)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	_, err = conn.Exec(`CREATE TRIGGER fail_repeat BEFORE UPDATE OF rt1_recurrenceRule ON TMTask BEGIN SELECT RAISE(FAIL, 'forced repeat failure'); END;`)
+	return err
+}
+
+func TestRepeatUpdateJSONDryRunResolvesTargetWithoutLaunch(t *testing.T) {
+	dbPath := writeTestDB(t)
+	launcher := &recordLauncher{}
+	out := &bytes.Buffer{}
+	app := &App{In: strings.NewReader(""), Out: out, Err: &bytes.Buffer{}, Launcher: launcher, DryRun: true}
+	root := NewRoot(app)
+	root.SetArgs([]string{"--dry-run", "update", "--db", dbPath, "--id", "T1", "--repeat=week", "--repeat-start=2025-01-02", "--json"})
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if len(launcher.args) != 0 {
+		t.Fatalf("dry-run launched Things: %#v", launcher.args)
+	}
+	var result repeatResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatalf("invalid JSON: %v: %q", err, out.String())
+	}
+	if result.IDs.Requested != "T1" || result.IDs.Template != "T1" || len(result.Stages) != 2 {
+		t.Fatalf("unexpected preview: %#v", result)
+	}
+}
+
+func TestRepeatUpdateDryRunRedactsURLIntent(t *testing.T) {
+	dbPath := writeTestDB(t)
+	out := &bytes.Buffer{}
+	app := &App{In: strings.NewReader(""), Out: out, Err: &bytes.Buffer{}, Launcher: &recordLauncher{}, DryRun: true}
+	root := NewRoot(app)
+	root.SetArgs([]string{"--dry-run", "update", "--db", dbPath, "--id", "T1", "--auth-token", "secret", "--notes", "changed", "--repeat=day", "--json"})
+	if err := root.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	var result repeatResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.Intent == nil || strings.Contains(result.Intent.URL, "secret") || !strings.Contains(result.Intent.URL, "REDACTED") {
+		t.Fatalf("unsafe intent: %#v", result.Intent)
+	}
+}
+
+func TestRepeatOnlyDatabaseFailureStillEmitsResult(t *testing.T) {
+	dbPath := writeTestDB(t)
+	conn, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = conn.Exec(`CREATE TRIGGER fail_repeat BEFORE UPDATE OF rt1_recurrenceRule ON TMTask BEGIN SELECT RAISE(FAIL, 'forced repeat failure'); END;`)
+	conn.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := &bytes.Buffer{}
+	app := &App{In: strings.NewReader(""), Out: out, Err: &bytes.Buffer{}, Launcher: &recordLauncher{}}
+	root := NewRoot(app)
+	root.SetArgs([]string{"update", "--db", dbPath, "--id", "T1", "--repeat=week", "--repeat-start=2025-01-02", "--json"})
+	if err := root.Execute(); err == nil {
+		t.Fatal("expected failure")
+	}
+	var result repeatResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatalf("missing result: %v %q", err, out.String())
+	}
+	if len(result.Stages) != 1 || result.Stages[0].Status != "failed" || len(result.Recovery) != 1 {
+		t.Fatalf("unexpected result: %#v", result)
+	}
+}
+
+func TestCombinedUpdateDatabaseFailureIsPartial(t *testing.T) {
+	dbPath := writeTestDB(t)
+	out := &bytes.Buffer{}
+	app := &App{In: strings.NewReader(""), Out: out, Err: &bytes.Buffer{}, Launcher: &triggerLauncher{dbPath: dbPath}}
+	root := NewRoot(app)
+	root.SetArgs([]string{"update", "--db", dbPath, "--id", "T1", "--auth-token", "tok", "--notes", "changed", "--repeat=day", "--repeat-start=2025-01-02", "--json"})
+	if err := root.Execute(); err == nil {
+		t.Fatal("expected failure")
+	}
+	var result repeatResult
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if !result.Partial || result.Stages[0].Name != "url" || result.Stages[1].Status != "failed" {
+		t.Fatalf("unexpected result: %#v", result)
+	}
+}
+
+func TestRepeatUpdateRejectsWhenAndLater(t *testing.T) {
+	for _, arg := range []string{"--when=today", "--later"} {
+		app := &App{In: strings.NewReader(""), Out: &bytes.Buffer{}, Err: &bytes.Buffer{}, Launcher: &recordLauncher{}}
+		root := NewRoot(app)
+		root.SetArgs([]string{"update", "--id", "T1", "--repeat=day", arg})
+		if err := root.Execute(); err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+			t.Fatalf("%s: %v", arg, err)
+		}
+	}
+}
+
+func TestRepeatUpdateRejectsStatusChanges(t *testing.T) {
+	for _, arg := range []string{"--completed", "--canceled"} {
+		launcher := &recordLauncher{}
+		app := &App{In: strings.NewReader(""), Out: &bytes.Buffer{}, Err: &bytes.Buffer{}, Launcher: launcher}
+		root := NewRoot(app)
+		root.SetArgs([]string{"update", "--id", "T1", "--repeat=day", arg})
+		if err := root.Execute(); err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+			t.Fatalf("%s: %v", arg, err)
+		}
+		if len(launcher.args) != 0 {
+			t.Fatalf("%s launched Things: %#v", arg, launcher.args)
+		}
+	}
+}
 
 func TestUpdateCommandRequiresAuthToken(t *testing.T) {
 	t.Setenv("THINGS_AUTH_TOKEN", "")

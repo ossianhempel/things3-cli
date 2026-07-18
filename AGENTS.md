@@ -51,9 +51,11 @@
 - Area/project automation uses AppleScript and may trigger macOS prompts.
 
 ## Agent Scripts / Skills Sync
-- Keep the in-repo skill mirror at `skills/things/SKILL.md` in sync with
-  `../agent-scripts/archived-skills/things/SKILL.md`.
+- Treat `skills/things/SKILL.md` as canonical and keep it in sync with the
+  active mirror at `../agent-scripts/skills/things/SKILL.md`.
 - After CLI changes, update both copies so agent guidance stays aligned.
+- Use `make check-things-skill` to check parity and `make sync-things-skill`
+  for the symlink-safe, atomic local sync path.
 - Use `.codex/skills/release-flow/SKILL.md` for public release prep,
   validation, Homebrew formula updates, and GitHub release verification.
 - If release mechanics change, update `.codex/skills/release-flow/SKILL.md`,

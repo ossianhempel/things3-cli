@@ -56,9 +56,12 @@ brew install ossianhempel/tap/things3-cli
 - `help`             Command help and man page
 - `--version`        Print CLI + Things version info
 
-## Auth token setup (for update commands)
+## Auth token setup (for URL-scheme updates)
 
-Update operations use the Things URL scheme and require an auth token.
+Ordinary update operations use the Things URL scheme and require an auth token.
+Repeat-only updates write directly to the database and do not require the URL
+token. A command that combines ordinary fields with repeat fields requires both
+the token and writable database access.
 
 1. Open Things 3.
 2. Settings -> General -> Things URLs.
@@ -72,7 +75,7 @@ export THINGS_AUTH_TOKEN=your_token_here
 Tip: add the export to your shell profile (e.g. `~/.zshrc`) to persist it.
 You can run `things auth` to check token status and print these steps.
 
-## Database access (read-only)
+## Database access
 
 In addition to the URL-scheme commands above, this CLI can read your local
 Things database to list content:
@@ -93,8 +96,9 @@ By default it looks for the Things database in your user Library under the
 Things app group container (the `ThingsData-*` folder). You can override the
 path with `THINGSDB` or `--db`.
 
-Note: The database lives inside the Things app sandbox, so you may need to
-grant your terminal Full Disk Access.
+Read commands need database access; repeat commands need writable database
+access. Because the database lives inside the Things app sandbox, both normally
+require Full Disk Access for your terminal or agent host.
 
 ## Repeating todos
 
@@ -108,10 +112,19 @@ instances of recurring todos. Template UUIDs can be passed to `things update`
 when you need to move or edit the source template rather than the visible
 generated instance.
 
-Supported patterns: every N day/week/month/year, in after-completion (default)
-or schedule mode. The anchor date controls weekday/month/day; multi-day weekly
-patterns are not supported yet. Use `--repeat-until` to stop after a date.
-Repeating projects are not supported.
+Supported patterns are every N day/week/month/year. Use after-completion mode
+(the default) when the next copy should be based on completing the current copy;
+use schedule mode for a fixed calendar cadence. `--repeat-start` anchors the
+recurrence pattern and is separate from the todo's ordinary `--when` date.
+`--repeat-deadline=N` adds a deadline so each copy appears in Today N days
+earlier. Multi-day weekly patterns are not supported yet. Use `--repeat-until`
+to stop after a date. Repeating projects are not supported.
+
+`--dry-run` previews the normalized repeat operation without opening Things or
+writing the database. After a real write, the CLI re-reads the template and only
+reports verified repeat state. If a multi-stage add partially succeeds, its
+output identifies the completed and failed stages and includes a trusted UUID
+when available; re-read that UUID before retrying instead of guessing by title.
 
 Examples:
 
@@ -127,9 +140,15 @@ things update --id <uuid> --incomplete-checklist-item "Book hotel"
 
 This repo includes a Things agent skill at `skills/things/SKILL.md`.
 
-That file is mirrored to `../agent-scripts/archived-skills/things/SKILL.md` so
-local agent setups can consume the same guidance. Keep both copies in sync
-when commands or behavior change.
+That canonical file is mirrored to `../agent-scripts/skills/things/SKILL.md` so
+local agent setups can consume the same guidance. Run `make check-things-skill`
+to check a sibling checkout and `make sync-things-skill` to update the exact
+active mirror safely.
+
+The scheduled/manual `skill-sync.yml` workflow compares both repositories'
+published `main` artifacts. It requires `AGENT_SCRIPTS_READ_TOKEN`, a dedicated
+read-only Actions secret that can read the private `ossianhempel/agent-scripts`
+repository; do not supply a broad write-capable token.
 
 Maintainer release guidance lives in `.codex/skills/release-flow/SKILL.md` and
 `docs/RELEASING.md`. Use it when preparing a public release or updating the

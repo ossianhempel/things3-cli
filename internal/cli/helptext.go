@@ -1611,7 +1611,14 @@ DESCRIPTION
 
   Repeating todos are created via the Things database and require a single
   explicit title (no {{BT}}--titles{{BT}}, {{BT}}--use-clipboard{{BT}}, or
-  quick entry).
+  quick entry). Repeat writes are previewed by {{BT}}--dry-run{{BT}} and
+  re-read after execution; a successful result describes the verified
+  template state rather than promising that Things has created an occurrence.
+
+  Use after-completion mode (the default) when the next copy should be based on
+  completing the current copy. Use schedule mode when copies should follow a
+  fixed calendar cadence. {{BT}}--repeat-start{{BT}} anchors that cadence; it
+  is not the same as the todo's ordinary {{BT}}--when{{BT}} date.
 
 OPTIONS
   --db=PATH
@@ -1778,6 +1785,9 @@ DESCRIPTION
   remaining lines are set as the todo's notes. Notes set this way take
   precedence over the {{BT}}--notes={{BT}} option.
 
+  Repeating projects are not supported. Repeat flags apply only to todos via
+  {{BT}}things add{{BT}} and {{BT}}things update{{BT}}.
+
 OPTIONS
   --area-id=AREAID
     The ID of an area to add to. Takes precedence over area. Optional.
@@ -1821,24 +1831,6 @@ OPTIONS
     string, or a date time string. Using a date time string adds a reminder
     for that time. The time component is ignored if anytime or someday is
     specified. Optional.
-
-  --repeat=UNIT
-    Create a repeating template. Units: day, week, month, year.
-
-  --repeat-mode=MODE
-    Repeat mode: after-completion (default) or schedule.
-
-  --repeat-every=N
-    Repeat every N units. Default: 1.
-
-  --repeat-start=DATE
-    Anchor date for the repeat rule (YYYY-MM-DD). Defaults to today.
-
-  --repeat-until=DATE
-    Stop repeating after the given date (YYYY-MM-DD). Optional.
-
-  --repeat-deadline=DAYS
-    Add repeating deadlines; each copy appears in Today DAYS earlier.
 
   --todo=TITLE
     Title of a todo to add to the project. Can be specified more than once
@@ -2010,7 +2002,15 @@ DESCRIPTION
   to confirm bulk updates.
 
   Repeating schedules are updated via the Things database and require
-  {{BT}}--id{{BT}} (bulk updates are not supported).
+  {{BT}}--id{{BT}} (bulk updates are not supported). Use {{BT}}--dry-run{{BT}}
+  to inspect the normalized repeat rule and resolved target without mutation.
+  Execution re-reads the template; a partial result reports completed and
+  failed stages plus a trusted UUID when one is known.
+
+  Use after-completion mode (the default) when the next copy should be based on
+  completion. Use schedule mode for a fixed calendar cadence.
+  {{BT}}--repeat-start{{BT}} anchors recurrence and is separate from
+  {{BT}}--when{{BT}}. {{BT}}--repeat-clear{{BT}} removes the recurrence rule.
 
   If {{BT}}-{{BT}} is given as a title, it is read from STDIN. When titles have
   multiple lines of text, the first is set as the todo's title and the
@@ -2020,9 +2020,12 @@ DESCRIPTION
   Scheduling note: use {{BT}}--when=someday{{BT}} for Someday, or
   {{BT}}--later{{BT}} for This Evening.
 
-AUTHORIZATION
-  Update commands require a Things URL scheme token. Run {{BT}}things auth{{BT}}
-  for setup, set {{BT}}THINGS_AUTH_TOKEN{{BT}}, or pass {{BT}}--auth-token{{BT}}.
+AUTHORIZATION AND DATABASE ACCESS
+  Ordinary URL-scheme updates require a token. Run {{BT}}things auth{{BT}} for
+  setup, set {{BT}}THINGS_AUTH_TOKEN{{BT}}, or pass {{BT}}--auth-token{{BT}}.
+  Repeat-only updates write the Things database and require writable database
+  access (normally Full Disk Access), but not a URL token. Updates combining
+  ordinary and repeat fields require both.
 
   Token setup:
     1. Open Things 3.

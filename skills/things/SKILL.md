@@ -7,6 +7,19 @@ description: Things 3 CLI for reading the local Things database and creating/upd
 
 Use `things` to read from the local Things 3 database and to create/update items via the Things URL scheme (areas use AppleScript).
 
+## Safe operating workflow
+
+For any write whose target is not already a trusted UUID:
+
+1. **Read** with `things search`, `things tasks`, or `things templates`.
+2. **Identify** the intended row and capture its UUID. If multiple items match, show the candidates and ask the human; never guess by title.
+3. **Preview** the exact write with `--dry-run` when the command supports it.
+4. **Write** using `--id <UUID>`.
+5. **Verify** by re-reading that UUID (and, for recurrence, the resolved template UUID).
+6. **Report** what was requested, what was verified, and any remaining uncertainty.
+
+Reads do not authorize writes. Prefer UUIDs even when a command accepts a title.
+
 Quick start (read)
 - `things inbox`
 - `things today` follows the app's Today/This Evening order; select `start_bucket,today_index_reference_date,today_index` to inspect its raw ordering metadata.
@@ -40,13 +53,31 @@ Write (URL scheme)
 - Move to This Evening (Later): `things update --id <uuid> --later` (alias for `--when=evening`)
 
 Repeating (database writes)
-- Create repeating todo: `things add "Daily standup" --repeat=day --repeat-mode=schedule`
-- Repeat every 2 weeks after completion: `things update --id <uuid> --repeat=week --repeat-every=2`
-- Anchor a schedule on a date: `things add "Monthly bill" --repeat=month --repeat-mode=schedule --repeat-start=2026-02-01`
-- Add repeating deadlines: `things update --id <uuid> --repeat=week --repeat-deadline=2`
-- Stop repeating after a date: `things update --id <uuid> --repeat=day --repeat-until=2027-06-01`
-- Clear repeating schedule: `things update --id <uuid> --repeat-clear`
- - Repeating adds launch Things in the background first to ensure the item hits the database before the repeat rule is applied.
+- Use after-completion mode (the default) when the next copy should depend on completion: `things update --id <UUID> --repeat=week --repeat-every=2`.
+- Use schedule mode for a fixed calendar cadence: `things add "Daily standup" --repeat=day --repeat-mode=schedule`.
+- `--repeat-start=YYYY-MM-DD` anchors weekday/month/day recurrence. It is not the todo's ordinary `--when` schedule.
+- `--repeat-deadline=N` adds a deadline so each copy appears in Today N days earlier.
+- `--repeat-until=YYYY-MM-DD` stops recurrence after that date.
+- `--repeat-clear` removes the repeat rule; omission leaves the existing rule unchanged.
+- Repeating projects are unsupported. Repeat flags belong to `add` and `update` for todos.
+
+Repeat changes must use the full workflow:
+
+```sh
+# Existing todo: resolve and retain the UUID first.
+things templates --search "Monthly bill" --format json --select uuid,title
+things update --id <TEMPLATE_UUID> --repeat=month --repeat-mode=schedule \
+  --repeat-start=2026-08-01 --repeat-deadline=2 --dry-run
+things update --id <TEMPLATE_UUID> --repeat=month --repeat-mode=schedule \
+  --repeat-start=2026-08-01 --repeat-deadline=2
+things templates --search "Monthly bill" --format json
+```
+
+Treat successful output as verified template state, not as proof that Things has already spawned a visible occurrence. Repeating adds first create a todo through Things, then locate and update its database row. If output reports partial success, a non-repeating todo may remain:
+
+- When a trusted UUID is reported, re-read that UUID and retry only the missing repeat stage.
+- When creation succeeded but identity is unknown, search using the exact title plus creation time/context and ask the human to disambiguate multiple candidates.
+- Do not claim rollback, do not interpolate untrusted titles into shell commands, and do not repeat the add blindly.
 
 Filters + DB
 - Use `--db` or `THINGSDB` to point to a specific Things database. Accepted forms: the `main.sqlite` file, the `Things Database.thingsdatabase` directory, or the parent `ThingsData-*` directory.
@@ -61,9 +92,12 @@ Filters + DB
 - `--recursive` includes checklist items in JSON output.
 
 Auth + permissions
-- Updates require an auth token: run `things auth` for setup/status, set `THINGS_AUTH_TOKEN`, or pass `--auth-token`.
-- DB reads may require Full Disk Access for your terminal.
-- Repeating add/update writes directly to the Things database and requires Full Disk Access; use `--db` or `THINGSDB` to target a specific database.
+- Read-only database commands may require Full Disk Access for the terminal or agent host.
+- Ordinary URL-scheme updates require an auth token: run `things auth`, set `THINGS_AUTH_TOKEN`, or pass `--auth-token`.
+- Repeat-only updates write directly to the Things database and require writable database access (normally Full Disk Access), but not a URL token.
+- Repeat adds use the unauthenticated add URL plus a direct database write, so they require writable database access but not an auth token.
+- Repeat updates that also change ordinary fields use both paths and require both auth and writable database access.
+- Use `--db` or `THINGSDB` only for an explicitly trusted Things database. Check the resolved target shown by preview before writing.
 - URL scheme writes can open/foreground Things; use `--dry-run` to print URLs or `--foreground` to force focus.
 - Update `--when/--later` is verified against the database by default; use `--no-verify` to skip verification.
 - `--later` / `--when=evening` refuses to move tasks that are already scheduled for a non-today date; use `--allow-non-today` to override.

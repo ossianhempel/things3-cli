@@ -23,3 +23,9 @@ jobs:
 
       - name: Run tests
         run: go test ./...
+
+      - name: Validate canonical Things skill
+        run: make check-things-skill
+
+      - name: Test Things skill sync safety
+        run: make test-things-skill-sync
