@@ -95,7 +95,8 @@ Auth + permissions
 - Read-only database commands may require Full Disk Access for the terminal or agent host.
 - Ordinary URL-scheme updates require an auth token: run `things auth`, set `THINGS_AUTH_TOKEN`, or pass `--auth-token`.
 - Repeat-only updates write directly to the Things database and require writable database access (normally Full Disk Access), but not a URL token.
-- Repeat adds and updates that also change ordinary fields use both paths and require both auth and writable database access.
+- Repeat adds use the unauthenticated add URL plus a direct database write, so they require writable database access but not an auth token.
+- Repeat updates that also change ordinary fields use both paths and require both auth and writable database access.
 - Use `--db` or `THINGSDB` only for an explicitly trusted Things database. Check the resolved target shown by preview before writing.
 - URL scheme writes can open/foreground Things; use `--dry-run` to print URLs or `--foreground` to force focus.
 - Update `--when/--later` is verified against the database by default; use `--no-verify` to skip verification.

@@ -46,9 +46,9 @@ func TestRecoveryPreservesSemanticsAndShellQuotes(t *testing.T) {
 	until, _ := time.ParseInLocation("2006-01-02", "2025-04-01", time.Local)
 	anchor, _ := time.ParseInLocation("2006-01-02", "2025-01-02", time.Local)
 	spec := RepeatSpec{Spec: repeat.Spec{Mode: repeat.ModeSchedule, Unit: repeat.UnitWeek, Every: 3, Anchor: anchor, EndDate: &until, DeadlineOffset: &offset}}
-	argv := recoveryArgv("odd ' uuid", spec)
+	argv := recoveryArgv("odd ' uuid", spec, "/tmp/other database.sqlite")
 	joined := strings.Join(argv, " ")
-	for _, want := range []string{"--repeat week", "--repeat-mode schedule", "--repeat-every 3", "--repeat-until 2025-04-01", "--repeat-deadline 2"} {
+	for _, want := range []string{"--db /tmp/other database.sqlite", "--repeat week", "--repeat-mode schedule", "--repeat-every 3", "--repeat-until 2025-04-01", "--repeat-deadline 2"} {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("missing %q in %#v", want, argv)
 		}

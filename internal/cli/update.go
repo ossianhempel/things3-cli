@@ -40,6 +40,9 @@ func NewUpdateCommand(app *App) *cobra.Command {
 			if repeatSpec.Enabled && strings.TrimSpace(opts.ID) == "" {
 				return fmt.Errorf("Error: repeating updates require --id")
 			}
+			if repeatSpec.Enabled && (opts.Completed || opts.Canceled) {
+				return fmt.Errorf("Error: --completed/--canceled cannot be combined with repeat changes because repeat templates must remain incomplete")
+			}
 			if repeatJSON && !repeatSpec.Enabled {
 				return fmt.Errorf("Error: --json is currently supported only for repeat updates")
 			}

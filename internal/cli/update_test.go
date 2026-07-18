@@ -116,6 +116,21 @@ func TestRepeatUpdateRejectsWhenAndLater(t *testing.T) {
 	}
 }
 
+func TestRepeatUpdateRejectsStatusChanges(t *testing.T) {
+	for _, arg := range []string{"--completed", "--canceled"} {
+		launcher := &recordLauncher{}
+		app := &App{In: strings.NewReader(""), Out: &bytes.Buffer{}, Err: &bytes.Buffer{}, Launcher: launcher}
+		root := NewRoot(app)
+		root.SetArgs([]string{"update", "--id", "T1", "--repeat=day", arg})
+		if err := root.Execute(); err == nil || !strings.Contains(err.Error(), "cannot be combined") {
+			t.Fatalf("%s: %v", arg, err)
+		}
+		if len(launcher.args) != 0 {
+			t.Fatalf("%s launched Things: %#v", arg, launcher.args)
+		}
+	}
+}
+
 func TestUpdateCommandRequiresAuthToken(t *testing.T) {
 	t.Setenv("THINGS_AUTH_TOKEN", "")
 	launcher := &recordLauncher{}

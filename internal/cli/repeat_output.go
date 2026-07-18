@@ -143,7 +143,7 @@ func (p *repeatUpdatePlan) executeMutation() error {
 	if err != nil {
 		p.result.Partial = len(p.result.Stages) > 0
 		p.result.addStage(repeatStageDatabase, repeatStatusFailed)
-		p.result.Recovery = []repeatRecovery{{Argv: recoveryArgv(p.targetID, p.spec)}}
+		p.result.Recovery = []repeatRecovery{{Argv: recoveryArgv(p.targetID, p.spec, p.result.Database.Path)}}
 		return err
 	}
 	status := repeatStatusApplied
@@ -155,7 +155,7 @@ func (p *repeatUpdatePlan) executeMutation() error {
 	p.result.Repeat = actual
 	if err != nil {
 		p.result.failStage(repeatStageVerification)
-		p.result.Recovery = []repeatRecovery{{Argv: recoveryArgv(p.targetID, p.spec)}}
+		p.result.Recovery = []repeatRecovery{{Argv: recoveryArgv(p.targetID, p.spec, p.result.Database.Path)}}
 		return err
 	}
 	p.result.markVerified()
@@ -263,8 +263,11 @@ func redactURLIntent(raw string) string {
 	return u.String()
 }
 
-func recoveryArgv(id string, spec RepeatSpec) []string {
+func recoveryArgv(id string, spec RepeatSpec, dbPath string) []string {
 	argv := []string{"things", "update", "--id", id}
+	if strings.TrimSpace(dbPath) != "" {
+		argv = append(argv, "--db", dbPath)
+	}
 	if spec.Clear {
 		return append(argv, "--repeat-clear")
 	}

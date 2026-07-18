@@ -119,7 +119,7 @@ func NewAddCommand(app *App) *cobra.Command {
 			result.addStage(repeatStageLocate, repeatStatusCompleted)
 			if err := store.ApplyRepeatRule(taskID, update); err != nil {
 				result.failStage(repeatStageDatabase)
-				result.Recovery = []repeatRecovery{{Argv: recoveryArgv(taskID, repeatSpec)}}
+				result.Recovery = []repeatRecovery{{Argv: recoveryArgv(taskID, repeatSpec, result.Database.Path)}}
 				_ = renderRepeatResult(app.Out, result, repeatJSON)
 				return formatDBError(err)
 			}
@@ -128,7 +128,7 @@ func NewAddCommand(app *App) *cobra.Command {
 			result.Repeat = actual
 			if err != nil {
 				result.failStage(repeatStageVerification)
-				result.Recovery = []repeatRecovery{{Argv: recoveryArgv(taskID, repeatSpec)}}
+				result.Recovery = []repeatRecovery{{Argv: recoveryArgv(taskID, repeatSpec, result.Database.Path)}}
 				_ = renderRepeatResult(app.Out, result, repeatJSON)
 				return formatDBError(err)
 			}
