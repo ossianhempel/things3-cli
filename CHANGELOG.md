@@ -7,6 +7,14 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-18
+- Fixed repeating todos remaining paused as Someday templates after applying a repeat rule.
+- Added verified, stage-aware results for repeat add, update, clear, and dry-run operations.
+- Added structured JSON output, shell-safe recovery commands, and database-target provenance for repeat operations.
+- Exposed canonical repeat semantics and activation state through the `templates` command.
+- Clarified repeat modes, permissions, unsupported project recurrence, and the UUID-first agent workflow.
+- Added safe cross-repository synchronization and drift checks for the Things skill.
+
 ## [0.3.0] - 2026-05-26
 - Added `templates` command to list repeating template tasks from the Things database.
 - Added `update --complete-checklist-item` and `--incomplete-checklist-item`
