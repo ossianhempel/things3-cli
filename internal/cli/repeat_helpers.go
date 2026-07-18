@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/ossianhempel/things3-cli/internal/db"
-	"github.com/ossianhempel/things3-cli/internal/repeat"
 	"github.com/ossianhempel/things3-cli/internal/things"
 )
 
@@ -74,15 +73,4 @@ func resolveRepeatTarget(store *db.Store, id string, expectedType int) (string, 
 		return "", usedTemplate, fmt.Errorf("Error: repeating rules require an incomplete item")
 	}
 	return resolvedID, usedTemplate, nil
-}
-
-func applyRepeatSpec(store *db.Store, id string, spec RepeatSpec) error {
-	if spec.Clear {
-		return store.ClearRepeatRule(id)
-	}
-	update, err := repeat.BuildUpdate(spec.Spec)
-	if err != nil {
-		return err
-	}
-	return store.ApplyRepeatRule(id, update)
 }

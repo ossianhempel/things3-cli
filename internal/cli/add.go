@@ -16,6 +16,7 @@ func NewAddCommand(app *App) *cobra.Command {
 	repeatOpts := RepeatOptions{}
 	var dbPath string
 	var allowUnsafeTitle bool
+	var repeatJSON bool
 
 	cmd := &cobra.Command{
 		Use:   "add [OPTIONS...] [--] [-|TITLE]",
@@ -29,6 +30,9 @@ func NewAddCommand(app *App) *cobra.Command {
 			repeatSpec, err := parseRepeatSpec(cmd, repeatOpts)
 			if err != nil {
 				return err
+			}
+			if repeatJSON && !repeatSpec.Enabled {
+				return fmt.Errorf("Error: --json is currently supported only for repeat adds")
 			}
 			title := extractTitle(rawInput, opts.TitlesRaw)
 			if err := guardUnsafeTitle(title, allowUnsafeTitle); err != nil {
@@ -51,43 +55,85 @@ func NewAddCommand(app *App) *cobra.Command {
 				if opts.ShowQuickEntry || title == "" {
 					return fmt.Errorf("Error: repeating add requires an explicit title")
 				}
+				if opts.Deadline != "" && repeatSpec.Spec.DeadlineOffset != nil {
+					return fmt.Errorf("Error: --deadline cannot be combined with --repeat-deadline")
+				}
+				if cmd.Flags().Changed("when") {
+					return fmt.Errorf("Error: --when cannot be combined with --repeat because repeat activation controls scheduling; create the repeat first, then inspect its template state")
+				}
 			}
 
 			url := things.BuildAddURL(opts, rawInput)
 			if !repeatSpec.Enabled {
 				return openURL(app, url)
 			}
+			update, err := repeat.BuildUpdate(repeatSpec.Spec)
+			if err != nil {
+				return err
+			}
 			if app.DryRun {
-				if err := openURL(app, url); err != nil {
-					return err
+				store, resolvedPath, err := db.OpenDefault(dbPath)
+				if err != nil {
+					return formatDBError(err)
 				}
-				fmt.Fprintln(app.Err, "Note: --repeat is skipped in --dry-run mode.")
-				return nil
+				defer store.Close()
+				if err := store.ValidateRepeatSchema(); err != nil {
+					return formatDBError(err)
+				}
+				result := repeatResult{SchemaVersion: 1, Action: "create", DryRun: true, Repeat: expectedRepeatState(repeatSpec.Spec), Database: repeatDatabase{Path: store.Path(), Source: repeatDatabaseSource(dbPath, resolvedPath)}, Intent: &repeatIntent{URL: redactURLIntent(url)}}
+				result.addStage(repeatStageURL, repeatStatusPlanned)
+				result.addStage(repeatStageLocate, repeatStatusPlanned)
+				result.addStage(repeatStageDatabase, repeatStatusPlanned)
+				result.addStage(repeatStageVerification, repeatStatusPlanned)
+				return renderRepeatResult(app.Out, result, repeatJSON)
 			}
 
+			expected := expectedRepeatState(repeatSpec.Spec)
+			result := repeatResult{SchemaVersion: 1, Action: "create", Repeat: expected}
+			store, resolvedPath, err := db.OpenDefaultWritable(dbPath)
+			if err != nil {
+				return formatDBError(err)
+			}
+			defer store.Close()
+			result.Database = repeatDatabase{Path: store.Path(), Source: repeatDatabaseSource(dbPath, resolvedPath)}
+			result.Intent = &repeatIntent{URL: redactURLIntent(url)}
+			if err := store.ValidateRepeatSchema(); err != nil {
+				return formatDBError(err)
+			}
 			ensureThingsLaunched(app)
 			started := time.Now().Add(-2 * time.Second)
 			if err := openURL(app, url); err != nil {
 				return err
 			}
-			store, _, err := db.OpenDefaultWritable(dbPath)
-			if err != nil {
-				return formatDBError(err)
-			}
-			defer store.Close()
+			result.addStage(repeatStageURL, repeatStatusCompleted)
 
 			taskID, err := waitForCreatedItem(store, title, db.TaskTypeTodo, started)
 			if err != nil {
+				result.failStage(repeatStageLocate)
+				result.Recovery = []repeatRecovery{{Argv: []string{"things", "search", title, "--select", "uuid,title"}}}
+				_ = renderRepeatResult(app.Out, result, repeatJSON)
 				return formatDBError(err)
 			}
-			update, err := repeat.BuildUpdate(repeatSpec.Spec)
-			if err != nil {
-				return err
-			}
+			result.IDs.Created = taskID
+			result.IDs.Template = taskID
+			result.addStage(repeatStageLocate, repeatStatusCompleted)
 			if err := store.ApplyRepeatRule(taskID, update); err != nil {
+				result.failStage(repeatStageDatabase)
+				result.Recovery = []repeatRecovery{{Argv: recoveryArgv(taskID, repeatSpec)}}
+				_ = renderRepeatResult(app.Out, result, repeatJSON)
 				return formatDBError(err)
 			}
-			return nil
+			result.addStage(repeatStageDatabase, repeatStatusApplied)
+			actual, err := verifyRepeatState(store, taskID, expected, false)
+			result.Repeat = actual
+			if err != nil {
+				result.failStage(repeatStageVerification)
+				result.Recovery = []repeatRecovery{{Argv: recoveryArgv(taskID, repeatSpec)}}
+				_ = renderRepeatResult(app.Out, result, repeatJSON)
+				return formatDBError(err)
+			}
+			result.markVerified()
+			return renderRepeatResult(app.Out, result, repeatJSON)
 		},
 	}
 
@@ -112,6 +158,7 @@ func NewAddCommand(app *App) *cobra.Command {
 	flags.StringVar(&opts.TitlesRaw, "titles", "", "Comma-separated titles for multiple todos")
 	flags.StringVar(&opts.UseClipboard, "use-clipboard", "", "Use clipboard content")
 	flags.BoolVar(&allowUnsafeTitle, "allow-unsafe-title", false, "Allow titles that look like flag assignments")
+	flags.BoolVar(&repeatJSON, "json", false, "Emit a structured result for repeat adds")
 	addRepeatFlags(cmd, &repeatOpts, false)
 
 	return cmd

@@ -98,6 +98,9 @@ func NewTemplatesCommand(app *App) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if outputOpts.Format == "table" && len(outputOpts.Select) == 0 {
+				outputOpts.Select = []string{"uuid", "title", "repeat_active", "repeat_mode", "repeat_unit", "repeat_interval", "repeat_anchor", "repeat_next_date"}
+			}
 			tasks, err := fetchTasks(store, store.TemplatesTasks, opts, false, []int{db.TaskTypeTodo})
 			if err != nil {
 				return formatDBError(err)

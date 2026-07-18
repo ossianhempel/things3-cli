@@ -148,3 +148,25 @@ func TestTodayIndexReferenceDateStructuredNullBehavior(t *testing.T) {
 		}
 	})
 }
+
+func TestRepeatSemanticFieldsAcrossSelectedFormats(t *testing.T) {
+	offset := 3
+	task := db.Task{UUID: "TPL", Repeat: &db.RepeatState{Active: true, Mode: "schedule", Unit: "week", Interval: 2, Anchor: "2025-01-02", DeadlineOffset: &offset, Scheduled: true}}
+	fields, err := parseTaskSelect("uuid,repeat_active,repeat_mode,repeat_unit,repeat_interval,repeat_anchor,repeat_deadline_offset,repeat_scheduled")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, format := range []string{"json", "jsonl", "csv", "table"} {
+		t.Run(format, func(t *testing.T) {
+			var out bytes.Buffer
+			if err := writeTasks(&out, []db.Task{task}, TaskOutputOptions{Format: format, Select: fields}); err != nil {
+				t.Fatal(err)
+			}
+			for _, want := range []string{"TPL", "schedule", "week", "2025-01-02"} {
+				if !strings.Contains(out.String(), want) {
+					t.Fatalf("%s missing %q: %q", format, want, out.String())
+				}
+			}
+		})
+	}
+}

@@ -46,6 +46,7 @@ type Task struct {
 	StartDate               string          `json:"start_date,omitempty"`
 	StartBucket             *int            `json:"start_bucket,omitempty"`
 	Repeating               bool            `json:"repeating,omitempty"`
+	Repeat                  *RepeatState    `json:"repeat,omitempty"`
 	Deadline                string          `json:"deadline,omitempty"`
 	StopDate                string          `json:"stop_date,omitempty"`
 	Created                 string          `json:"created,omitempty"`
@@ -61,6 +62,23 @@ type Task struct {
 	AreaTitle               string          `json:"area_title,omitempty"`
 	HeadingID               string          `json:"heading_id,omitempty"`
 	HeadingTitle            string          `json:"heading_title,omitempty"`
+}
+
+// RepeatState is the canonical, agent-facing projection of a repeating template.
+// Raw recurrence plist data is intentionally excluded.
+type RepeatState struct {
+	Active         bool   `json:"active"`
+	Paused         bool   `json:"paused"`
+	Mode           string `json:"mode,omitempty"`
+	Unit           string `json:"unit,omitempty"`
+	Interval       int    `json:"interval,omitempty"`
+	Anchor         string `json:"anchor,omitempty"`
+	EndDate        string `json:"end_date,omitempty"`
+	DeadlineOffset *int   `json:"deadline_offset,omitempty"`
+	NextDate       string `json:"next_date,omitempty"`
+	Scheduled      bool   `json:"scheduled"`
+	StartBucket    *int   `json:"start_bucket,omitempty"`
+	DecodeWarning  string `json:"decode_warning,omitempty"`
 }
 
 type ChecklistItem struct {

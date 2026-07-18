@@ -100,6 +100,8 @@ var taskFieldAliases = map[string]string{
 	"today-index-reference-date": "today_index_reference_date",
 	"today_index_reference_date": "today_index_reference_date",
 	"repeat":                     "repeating",
+	"repeat-mode":                "repeat_mode",
+	"repeat-unit":                "repeat_unit",
 }
 
 var taskFieldHeaders = map[string]string{
@@ -119,6 +121,17 @@ var taskFieldHeaders = map[string]string{
 	"start_date":                 "START_DATE",
 	"start_bucket":               "START_BUCKET",
 	"repeating":                  "REPEATING",
+	"repeat_active":              "REPEAT_ACTIVE",
+	"repeat_paused":              "REPEAT_PAUSED",
+	"repeat_mode":                "REPEAT_MODE",
+	"repeat_unit":                "REPEAT_UNIT",
+	"repeat_interval":            "REPEAT_INTERVAL",
+	"repeat_anchor":              "REPEAT_ANCHOR",
+	"repeat_end_date":            "REPEAT_END_DATE",
+	"repeat_deadline_offset":     "REPEAT_DEADLINE_OFFSET",
+	"repeat_next_date":           "REPEAT_NEXT_DATE",
+	"repeat_scheduled":           "REPEAT_SCHEDULED",
+	"repeat_decode_warning":      "REPEAT_DECODE_WARNING",
 	"deadline":                   "DEADLINE",
 	"stop_date":                  "STOP_DATE",
 	"created":                    "CREATED",
@@ -177,6 +190,52 @@ func taskFieldValue(task db.Task, field string) any {
 		return *task.StartBucket
 	case "repeating":
 		return task.Repeating
+	case "repeat_active":
+		return task.Repeat != nil && task.Repeat.Active
+	case "repeat_paused":
+		return task.Repeat != nil && task.Repeat.Paused
+	case "repeat_mode":
+		if task.Repeat != nil {
+			return task.Repeat.Mode
+		}
+		return ""
+	case "repeat_unit":
+		if task.Repeat != nil {
+			return task.Repeat.Unit
+		}
+		return ""
+	case "repeat_interval":
+		if task.Repeat != nil {
+			return task.Repeat.Interval
+		}
+		return nil
+	case "repeat_anchor":
+		if task.Repeat != nil {
+			return task.Repeat.Anchor
+		}
+		return ""
+	case "repeat_end_date":
+		if task.Repeat != nil {
+			return task.Repeat.EndDate
+		}
+		return ""
+	case "repeat_deadline_offset":
+		if task.Repeat != nil && task.Repeat.DeadlineOffset != nil {
+			return *task.Repeat.DeadlineOffset
+		}
+		return nil
+	case "repeat_next_date":
+		if task.Repeat != nil {
+			return task.Repeat.NextDate
+		}
+		return ""
+	case "repeat_scheduled":
+		return task.Repeat != nil && task.Repeat.Scheduled
+	case "repeat_decode_warning":
+		if task.Repeat != nil {
+			return task.Repeat.DecodeWarning
+		}
+		return ""
 	case "deadline":
 		return task.Deadline
 	case "stop_date":

@@ -182,7 +182,22 @@ func (s *Store) Tasks(filter TaskFilter) ([]Task, error) {
 func (s *Store) TemplatesTasks(filter TaskFilter) ([]Task, error) {
 	filter.IncludeRepeating = true
 	where := "t.rt1_repeatingTemplate IS NULL AND (t.rt1_recurrenceRule IS NOT NULL OR t.repeater IS NOT NULL)"
-	return s.queryTasks(where, nil, filter, "")
+	tasks, err := s.queryTasks(where, nil, filter, "")
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]string, len(tasks))
+	for i := range tasks {
+		ids[i] = tasks[i].UUID
+	}
+	states, err := s.RepeatStatesByIDs(ids)
+	if err != nil {
+		return nil, err
+	}
+	for i := range tasks {
+		tasks[i].Repeat = states[tasks[i].UUID]
+	}
+	return tasks, nil
 }
 
 // TaskByID returns a single task by UUID.

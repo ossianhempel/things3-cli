@@ -18,6 +18,7 @@ func NewUpdateCommand(app *App) *cobra.Command {
 	var noVerify bool
 	var allowNonToday bool
 	var yes bool
+	var repeatJSON bool
 	queryOpts := TaskQueryOptions{
 		Status: "incomplete",
 		Limit:  200,
@@ -38,6 +39,15 @@ func NewUpdateCommand(app *App) *cobra.Command {
 			}
 			if repeatSpec.Enabled && strings.TrimSpace(opts.ID) == "" {
 				return fmt.Errorf("Error: repeating updates require --id")
+			}
+			if repeatJSON && !repeatSpec.Enabled {
+				return fmt.Errorf("Error: --json is currently supported only for repeat updates")
+			}
+			if repeatSpec.Enabled && !repeatSpec.Clear && opts.Deadline != "" && repeatSpec.Spec.DeadlineOffset != nil {
+				return fmt.Errorf("Error: --deadline cannot be combined with --repeat-deadline")
+			}
+			if repeatSpec.Enabled && !repeatSpec.Clear && (cmd.Flags().Changed("when") || opts.Later) {
+				return fmt.Errorf("Error: --when/--later cannot be combined with --repeat because repeat activation controls scheduling; apply the repeat first, then update the template separately")
 			}
 			title := extractTitle(rawInput, "")
 			if err := guardUnsafeTitle(title, allowUnsafeTitle); err != nil {
@@ -265,6 +275,15 @@ func NewUpdateCommand(app *App) *cobra.Command {
 				return nil
 			}
 
+			plan, err := prepareRepeatUpdate(dbPath, opts.ID, repeatSpec, app.DryRun)
+			if err != nil {
+				return formatDBError(err)
+			}
+			defer plan.store.Close()
+			if hasChanges && plan.usedTemplate {
+				return fmt.Errorf("Error: combined ordinary and repeat updates cannot target a generated occurrence; rerun against template UUID %s", plan.targetID)
+			}
+
 			if hasChanges {
 				if err := ensureAuth(); err != nil {
 					return err
@@ -288,13 +307,16 @@ func NewUpdateCommand(app *App) *cobra.Command {
 					return err
 				}
 				if app.DryRun {
-					if err := openURL(app, url); err != nil {
-						return err
+					if !repeatJSON {
+						if err := openURL(app, url); err != nil {
+							return err
+						}
 					}
-					if repeatSpec.Enabled {
-						fmt.Fprintln(app.Err, "Note: --repeat is skipped in --dry-run mode.")
-					}
-					return nil
+					plan.result.Intent = &repeatIntent{URL: redactURLIntent(url)}
+					plan.result.addStage(repeatStageURL, repeatStatusPlanned)
+					plan.result.addStage(repeatStageDatabase, repeatStatusPlanned)
+					plan.result.addStage(repeatStageVerification, repeatStatusPlanned)
+					return renderRepeatResult(app.Out, plan.result, repeatJSON)
 				}
 				var logStore *db.Store
 				if guardEvening {
@@ -335,37 +357,26 @@ func NewUpdateCommand(app *App) *cobra.Command {
 				if err := openURL(app, url); err != nil {
 					return err
 				}
+				plan.result.Intent = &repeatIntent{URL: redactURLIntent(url)}
+				plan.result.addStage(repeatStageURL, repeatStatusCompleted)
 				if verifyWhenEnabled && verifyStore != nil {
 					if err := verifyWhenApplied(verifyStore, opts.ID, verifyWhen); err != nil {
 						return err
 					}
 				}
 			} else if app.DryRun {
-				fmt.Fprintf(app.Out, "Would update repeating rule for %s\n", opts.ID)
-				return nil
+				plan.result.addStage(repeatStageDatabase, repeatStatusPlanned)
+				plan.result.addStage(repeatStageVerification, repeatStatusPlanned)
+				return renderRepeatResult(app.Out, plan.result, repeatJSON)
 			}
-			if app.DryRun {
-				fmt.Fprintln(app.Err, "Note: --repeat is skipped in --dry-run mode.")
-				return nil
+			if plan.usedTemplate {
+				fmt.Fprintf(app.Err, "Note: resolved repeating template %s for update\n", plan.targetID)
 			}
-
-			store, _, err := db.OpenDefaultWritable(dbPath)
-			if err != nil {
+			if err := plan.executeMutation(); err != nil {
+				_ = renderRepeatResult(app.Out, plan.result, repeatJSON)
 				return formatDBError(err)
 			}
-			defer store.Close()
-
-			targetID, usedTemplate, err := resolveRepeatTarget(store, opts.ID, db.TaskTypeTodo)
-			if err != nil {
-				return formatDBError(err)
-			}
-			if usedTemplate {
-				fmt.Fprintf(app.Err, "Note: resolved repeating template %s for update\n", targetID)
-			}
-			if err := applyRepeatSpec(store, targetID, repeatSpec); err != nil {
-				return formatDBError(err)
-			}
-			return nil
+			return renderRepeatResult(app.Out, plan.result, repeatJSON)
 		},
 	}
 
@@ -401,6 +412,7 @@ func NewUpdateCommand(app *App) *cobra.Command {
 	flags.BoolVar(&allowUnsafeTitle, "allow-unsafe-title", false, "Allow titles that look like flag assignments")
 	flags.BoolVar(&noVerify, "no-verify", false, "Skip verification of when updates against the Things database")
 	flags.BoolVar(&allowNonToday, "allow-non-today", false, "Allow moving non-today tasks to This Evening")
+	flags.BoolVar(&repeatJSON, "json", false, "Emit a structured result for repeat updates")
 	addRepeatFlags(cmd, &repeatOpts, true)
 	addTaskQueryFlags(cmd, &queryOpts, true, true)
 

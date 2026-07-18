@@ -159,10 +159,13 @@ Open Things in the foreground\.
 \fB--dry-run\fR
 Print the Things URL without opening it\.
 .LP
-.SH AUTHORIZATION
+.SH AUTHORIZATION AND DATABASE ACCESS
 .LP
 .PP
-Update operations use the Things URL scheme and require an auth token\.
+Ordinary update operations use the Things URL scheme and require an auth token\.
+Repeat\-only updates write directly to the Things database and require writable
+database access (normally Full Disk Access), but not a URL token\. Commands that
+combine ordinary and repeat fields require both\.
 .LP
 .PP
 1\. Open Things 3\.
@@ -197,6 +200,13 @@ are set as the todo\[cq]s notes\. Notes set this way take precedence over the
 .PP
 Repeating todos are created via the Things database and require a single
 explicit title (no \fB--titles\fR, \fB--use-clipboard\fR, or quick entry)\.
+.LP
+.PP
+Use after\-completion mode (the default) when the next copy should depend on
+completion\. Use schedule mode for a fixed calendar cadence\. \fB--repeat-start\fR
+anchors recurrence and is separate from ordinary \fB--when\fR scheduling\.
+\fB--dry-run\fR previews repeat writes, and execution re\-reads the template
+before reporting verified state\.
 .LP
 .PP
 \fBOPTIONS\fP
@@ -352,6 +362,13 @@ precedence over the \fB--notes=\fR option\.
 .PP
 Repeating schedules are updated via the Things database and require
 \fB--id=\fR\.
+.LP
+.PP
+Use \fB--dry-run\fR to preview the normalized rule and target\. Execution
+re\-reads the template; partial results identify completed and failed stages
+and include a trusted UUID when one is known\. Repeat\-only updates require
+writable database access\. Ordinary URL updates require the Things auth token;
+combined updates require both\.
 .LP
 .PP
 \fBOPTIONS\fP
@@ -628,6 +645,10 @@ If \fB-\fR is given as a title, it is read from STDIN\. When titles have
 multiple lines of text, the first is set as the todo\[cq]s title and the
 remaining lines are set as the todo\[cq]s notes\. Notes set this way take
 precedence over the \fB--notes=\fR option\.
+.LP
+.PP
+Repeating projects are not supported\. Repeat flags apply only to todos through
+\fBthings add\fR and \fBthings update\fR\.
 .LP
 .PP
 \fBOPTIONS\fP

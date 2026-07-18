@@ -119,9 +119,12 @@ https://github.com/ossianhempel/things3-cli#readme
 `--dry-run`
   Print the Things URL without opening it.
 
-## AUTHORIZATION
+## AUTHORIZATION AND DATABASE ACCESS
 
-Update operations use the Things URL scheme and require an auth token.
+Ordinary update operations use the Things URL scheme and require an auth token.
+Repeat-only updates write directly to the Things database and require writable
+database access (normally Full Disk Access), but not a URL token. Commands that
+combine ordinary and repeat fields require both.
 
 1. Open Things 3.
 2. Settings -> General -> Things URLs.
@@ -147,6 +150,12 @@ are set as the todo's notes. Notes set this way take precedence over the
 
 Repeating todos are created via the Things database and require a single
 explicit title (no `--titles`, `--use-clipboard`, or quick entry).
+
+Use after-completion mode (the default) when the next copy should depend on
+completion. Use schedule mode for a fixed calendar cadence. `--repeat-start`
+anchors recurrence and is separate from ordinary `--when` scheduling.
+`--dry-run` previews repeat writes, and execution re-reads the template before
+reporting verified state.
 
 **OPTIONS**
 
@@ -298,6 +307,12 @@ precedence over the `--notes=` option.
 
 Scheduling note: use `--when=someday` for Someday, or `--later` for
 This Evening.
+
+Repeat updates require `--id`. Use `--dry-run` to preview the normalized rule
+and target. Execution re-reads the template; partial results identify completed
+and failed stages and include a trusted UUID when one is known. Repeat-only
+updates require writable database access. Ordinary URL updates require the
+Things auth token; combined updates require both.
 
 **OPTIONS**
 
@@ -496,6 +511,9 @@ If `-` is given as a title, it is read from STDIN. When titles have
 multiple lines of text, the first is set as the todo's title and the
 remaining lines are set as the todo's notes. Notes set this way take
 precedence over the `--notes=` option.
+
+Repeating projects are not supported. Repeat flags apply only to todos through
+`things add` and `things update`.
 
 Alias: `create-project`.
 
