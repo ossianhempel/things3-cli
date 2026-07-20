@@ -1,9 +1,9 @@
 name: Things skill parity
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: "17 5 * * 1"
 
 permissions:
   contents: read
@@ -12,15 +12,6 @@ jobs:
   compare-published-skills:
     runs-on: ubuntu-latest
     steps:
-      - name: Require private-repository read credential
-        env:
-          AGENT_SCRIPTS_READ_TOKEN: ${{ secrets.AGENT_SCRIPTS_READ_TOKEN }}
-        run: |
-          if [ -z "$AGENT_SCRIPTS_READ_TOKEN" ]; then
-            echo "Missing AGENT_SCRIPTS_READ_TOKEN: configure a dedicated read-only token for ossianhempel/agent-scripts." >&2
-            exit 1
-          fi
-
       - name: Checkout canonical repository main
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -32,7 +23,7 @@ jobs:
         with:
           repository: ossianhempel/agent-scripts
           ref: main
-          token: ${{ secrets.AGENT_SCRIPTS_READ_TOKEN }}
+          ssh-key: ${{ secrets.AGENT_SCRIPTS_DEPLOY_KEY }}
           persist-credentials: false
           path: agent-scripts
 
@@ -44,6 +35,7 @@ jobs:
             echo "Published Things skill drift detected:" >&2
             echo "  canonical: things3-cli/main:skills/things/SKILL.md" >&2
             echo "  mirror:    agent-scripts/main:skills/things/SKILL.md" >&2
+            diff -u "$mirror" "$canonical" >&2 || true
             exit 1
           fi
           echo "Published Things skills match byte-for-byte."

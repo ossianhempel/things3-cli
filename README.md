@@ -145,10 +145,10 @@ local agent setups can consume the same guidance. Run `make check-things-skill`
 to check a sibling checkout and `make sync-things-skill` to update the exact
 active mirror safely.
 
-The scheduled/manual `skill-sync.yml` workflow compares both repositories'
-published `main` artifacts. It requires `AGENT_SCRIPTS_READ_TOKEN`, a dedicated
-read-only Actions secret that can read the private `ossianhempel/agent-scripts`
-repository; do not supply a broad write-capable token.
+The `skill-sync.yml` workflow runs on every `main` push and compares both
+repositories' published `main` artifacts. It uses a read-only deploy key stored
+as the `AGENT_SCRIPTS_DEPLOY_KEY` Actions secret to fetch the private
+`ossianhempel/agent-scripts` mirror.
 
 Maintainer release guidance lives in `.codex/skills/release-flow/SKILL.md` and
 `docs/RELEASING.md`. Use it when preparing a public release or updating the
