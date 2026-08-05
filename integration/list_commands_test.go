@@ -178,3 +178,42 @@ func TestProjectsOnlyProjects(t *testing.T) {
 	assertContains(t, out, "Project One")
 	assertNotContains(t, out, "Task One")
 }
+
+func TestTodayCommandExcludesOpenTasksInClosedProjects(t *testing.T) {
+	dbPath := writeTestDB(t)
+	out, _, code := runThings(t, "", "today", "--db", dbPath)
+	requireSuccess(t, code)
+	assertContains(t, out, "Today Task")
+	assertNotContains(t, out, "Open Task in Completed Project")
+	assertNotContains(t, out, "Scheduled Task in Completed Project")
+}
+
+func TestTasksCommandExcludesOpenTasksInClosedProjects(t *testing.T) {
+	dbPath := writeTestDB(t)
+	out, _, code := runThings(t, "", "tasks", "--db", dbPath, "--limit", "0")
+	requireSuccess(t, code)
+	assertContains(t, out, "Task One")
+	assertNotContains(t, out, "Open Task in Completed Project")
+	assertNotContains(t, out, "Open Task in Canceled Project")
+}
+
+func TestSearchExcludesOpenTasksInClosedProjects(t *testing.T) {
+	dbPath := writeTestDB(t)
+	out, _, code := runThings(t, "", "search", "Completed Project", "--db", dbPath)
+	requireSuccess(t, code)
+	assertNotContains(t, out, "Open Task in Completed Project")
+}
+
+func TestCompletedCommandKeepsClosedProjectChildren(t *testing.T) {
+	dbPath := writeTestDB(t)
+	out, _, code := runThings(t, "", "completed", "--db", dbPath)
+	requireSuccess(t, code)
+	assertContains(t, out, "Completed Task in Completed Project")
+}
+
+func TestShowResolvesOpenTaskInClosedProject(t *testing.T) {
+	dbPath := writeTestDB(t)
+	out, _, code := runThings(t, "", "show", "--db", dbPath, "--id", "LEFTTODAY1")
+	requireSuccess(t, code)
+	assertContains(t, out, "Open Task in Completed Project")
+}

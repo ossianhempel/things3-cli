@@ -73,6 +73,7 @@ func writeTestDB(t *testing.T) string {
 	now := time.Now()
 	today := thingsDate(now)
 	tomorrow := thingsDate(now.AddDate(0, 0, 1))
+	yesterday := thingsDate(now.AddDate(0, 0, -1))
 	nowUnix := float64(now.Unix())
 
 	if _, err := conn.Exec(`INSERT INTO TMTask (uuid, type, status, trashed, title, project, area, heading, notes, start, creationDate) VALUES ('T1', ?, ?, 0, 'Task One', 'P1', 'A1', 'H1', 'Some notes', 1, ?);`, 0, 0, nowUnix); err != nil {
@@ -153,6 +154,48 @@ func writeTestDB(t *testing.T) string {
 		nowUnix,
 	); err != nil {
 		t.Fatalf("insert generated repeating instance: %v", err)
+	}
+
+	// Projects the user closed, each still holding an open to-do. Things treats
+	// those leftovers as archived and hides them from the active lists.
+	closedProjects := []struct {
+		uuid   string
+		title  string
+		status int
+	}{
+		{"PDONE", "Completed Project", 3},
+		{"PCANC", "Canceled Project", 2},
+	}
+	for _, project := range closedProjects {
+		if _, err := conn.Exec(
+			`INSERT INTO TMTask (uuid, type, status, trashed, title, area, start, creationDate, stopDate) VALUES (?, ?, ?, 0, ?, 'A1', 1, ?, ?)`,
+			project.uuid, 1, project.status, project.title, nowUnix, nowUnix,
+		); err != nil {
+			t.Fatalf("insert closed project %s: %v", project.uuid, err)
+		}
+	}
+
+	closedProjectChildren := []struct {
+		uuid      string
+		title     string
+		project   string
+		status    int
+		start     int
+		startDate *int
+		stopDate  *float64
+	}{
+		{"LEFTTODAY1", "Open Task in Completed Project", "PDONE", 0, 1, &today, nil},
+		{"LEFTSCHED1", "Scheduled Task in Completed Project", "PDONE", 0, 2, &yesterday, nil},
+		{"LEFTCANC1", "Open Task in Canceled Project", "PCANC", 0, 1, nil, nil},
+		{"DONECHILD1", "Completed Task in Completed Project", "PDONE", 3, 1, nil, floatPtr(nowUnix)},
+	}
+	for _, child := range closedProjectChildren {
+		if _, err := conn.Exec(
+			`INSERT INTO TMTask (uuid, type, status, trashed, title, project, area, start, startDate, startBucket, creationDate, stopDate) VALUES (?, ?, ?, 0, ?, ?, 'A1', ?, ?, 0, ?, ?)`,
+			child.uuid, 0, child.status, child.title, child.project, child.start, child.startDate, nowUnix, child.stopDate,
+		); err != nil {
+			t.Fatalf("insert closed project child %s: %v", child.uuid, err)
+		}
 	}
 
 	return path
