@@ -90,6 +90,7 @@ Filters + DB
 - Sorting: `--sort created,-deadline,title`.
 - Output: `--format table|json|jsonl|csv`, `--select uuid,title,status`, `--no-header`. `--json` still works. `today_index_reference_date` is selectable as a raw packed integer but is not a generic `--sort` field.
 - `--recursive` includes checklist items in JSON output.
+- Active lists skip to-dos left open inside a trashed, completed, or canceled project, matching Things. Use `show --id <UUID>` to reach one anyway, or `logbook`/`completed`/`canceled` for children closed with their project.
 
 Auth + permissions
 - Read-only database commands may require Full Disk Access for the terminal or agent host.

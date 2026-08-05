@@ -941,7 +941,9 @@ terminal Full Disk Access to read it.
 ## things tasks [OPTIONS...]
 
 Lists todos from the local Things database (read-only). By default only
-incomplete, non-trashed tasks are shown.
+incomplete, non-trashed tasks are shown. Todos left open inside a trashed,
+completed, or canceled project are treated as archived and omitted, matching
+Things; reach one by UUID with `show --id`.
 
 **OPTIONS**
 

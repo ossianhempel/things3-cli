@@ -6,6 +6,7 @@ The format is based on Keep a Changelog, and this project adheres to
 Semantic Versioning.
 
 ## [Unreleased]
+- Fixed `today`, `tasks`, `search`, and the other active list views showing to-dos left open inside completed or canceled projects, which Things hides.
 
 ## [0.4.0] - 2026-07-18
 - Fixed repeating todos remaining paused as Someday templates after applying a repeat rule.

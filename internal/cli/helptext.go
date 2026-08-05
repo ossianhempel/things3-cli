@@ -211,7 +211,9 @@ SYNOPSIS
 
 DESCRIPTION
   Lists todos from the local Things database (read-only). By default only
-  incomplete, non-trashed tasks are shown.
+  incomplete, non-trashed tasks are shown. Todos left open inside a trashed,
+  completed, or canceled project are treated as archived and omitted, matching
+  Things; reach one by UUID with {{BT}}show --id{{BT}}.
 
 OPTIONS
   --db=PATH
@@ -304,6 +306,8 @@ DESCRIPTION
   This mirrors the Things logic for today (including predicted items) and
   orders rows by Today/This Evening bucket, reference date, and Today index.
   Select today_index_reference_date to inspect the raw packed date value.
+  Todos left open inside a trashed, completed, or canceled project are treated
+  as archived and omitted, matching Things.
 
 OPTIONS
   --db=PATH

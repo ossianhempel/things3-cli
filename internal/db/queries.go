@@ -784,6 +784,16 @@ func (s *Store) queryTasks(where string, args []any, filter TaskFilter, order st
 	if filter.ExcludeTrashedContext {
 		b.WriteString(" AND NOT IFNULL(p.trashed, 0)")
 		b.WriteString(" AND NOT IFNULL(hp.trashed, 0)")
+		// Completing or canceling a project archives it together with any to-do
+		// left open inside it, so Things stops listing those children in the
+		// active lists. Match that. The guard only covers open to-dos, so
+		// children closed alongside their project stay visible in the Logbook,
+		// completed, and canceled views.
+		b.WriteString(" AND NOT (t.status = ? AND IFNULL(p.status, ?) != ?)")
+		b.WriteString(" AND NOT (t.status = ? AND IFNULL(hp.status, ?) != ?)")
+		params = append(params,
+			StatusIncomplete, StatusIncomplete, StatusIncomplete,
+			StatusIncomplete, StatusIncomplete, StatusIncomplete)
 	}
 	if filter.Status != nil {
 		b.WriteString(" AND t.status = ?")
