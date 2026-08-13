@@ -55,7 +55,7 @@ https://github.com/ossianhempel/things3-cli#readme
   List upcoming tasks from the Things database.
 
 *things repeating*
-  List repeating tasks from the Things database.
+  List repeating tasks and projects from the Things database.
 
 *things anytime*
   List anytime tasks from the Things database.
@@ -234,7 +234,12 @@ reporting verified state.
   Anchor date for the repeat rule (YYYY-MM-DD). Defaults to today.
 
 *--repeat-until=DATE*
-  Stop repeating after the given date (YYYY-MM-DD). Optional.
+  Stop repeating after the given date (YYYY-MM-DD). Mutually exclusive with
+  `--repeat-count`. Optional.
+
+*--repeat-count=N*
+  Stop after N occurrences. Mutually exclusive with `--repeat-until`.
+  Count-based rules omit an end date entirely. Optional.
 
 *--repeat-deadline=DAYS*
   Add repeating deadlines; each copy appears in Today DAYS earlier.
@@ -441,7 +446,12 @@ Things auth token; combined updates require both.
   Anchor date for the repeat rule (YYYY-MM-DD). Defaults to today.
 
 *--repeat-until=DATE*
-  Stop repeating after the given date (YYYY-MM-DD). Optional.
+  Stop repeating after the given date (YYYY-MM-DD). Mutually exclusive with
+  `--repeat-count`. Optional.
+
+*--repeat-count=N*
+  Stop after N occurrences. Mutually exclusive with `--repeat-until`.
+  Count-based rules omit an end date entirely. Optional.
 
 *--repeat-deadline=DAYS*
   Add repeating deadlines; each copy appears in Today DAYS earlier.
@@ -512,8 +522,13 @@ multiple lines of text, the first is set as the todo's title and the
 remaining lines are set as the todo's notes. Notes set this way take
 precedence over the `--notes=` option.
 
-Repeating projects are not supported. Repeat flags apply only to todos through
-`things add` and `things update`.
+Repeating projects are supported. Repeat flags create a repeating project
+template, matching the schedule behavior of repeating todos: after-completion
+(default) or schedule mode, every N units, an anchor date via `--repeat-start`,
+an optional stop date via `--repeat-until`, an optional occurrence count via
+`--repeat-count`, and optional repeating deadlines via `--repeat-deadline`.
+Repeat operations require writable database access and verify the template
+after writing; Things spawns the current occurrence on its own schedule.
 
 Alias: `create-project`.
 
@@ -566,9 +581,40 @@ Alias: `create-project`.
   Title of a todo to add to the project. Can be specified more than once
   to add multiple todos. Optional.
 
+*--repeat=UNIT*
+  Create a repeating template. Units: day, week, month, year.
+
+*--repeat-mode=MODE*
+  Repeat mode: after-completion (default) or schedule.
+
+*--repeat-every=N*
+  Repeat every N units. Default: 1.
+
+*--repeat-start=DATE*
+  Anchor date for the repeat rule (YYYY-MM-DD). Defaults to today.
+
+*--repeat-until=DATE*
+  Stop repeating after the given date (YYYY-MM-DD). Mutually exclusive with
+  `--repeat-count`. Optional.
+
+*--repeat-count=N*
+  Stop after N occurrences. Mutually exclusive with `--repeat-until`.
+  Count-based rules omit an end date entirely. Optional.
+
+*--repeat-deadline=DAYS*
+  Add repeating deadlines; each copy appears in Today DAYS earlier.
+
+*--json*
+  Emit a structured result for repeat adds.
+
+*--db=PATH*
+  Path to the Things database. Overrides the THINGSDB environment variable.
+
 **EXAMPLES**
 
     things add-project "Take over the world"
+
+    things add-project "Weekly review" --repeat=week --repeat-mode=schedule
 
 ## things update-area [OPTIONS...] [--] [-|TITLE]
 
@@ -720,9 +766,45 @@ precedence over the `--notes=` option.
   Title of a todo to add to the project. Can be specified more than once
   to add multiple todos. Optional.
 
+*--repeat=UNIT*
+  Create a repeating template. Units: day, week, month, year.
+
+*--repeat-mode=MODE*
+  Repeat mode: after-completion (default) or schedule.
+
+*--repeat-every=N*
+  Repeat every N units. Default: 1.
+
+*--repeat-start=DATE*
+  Anchor date for the repeat rule (YYYY-MM-DD). Defaults to today.
+
+*--repeat-until=DATE*
+  Stop repeating after the given date (YYYY-MM-DD). Mutually exclusive with
+  `--repeat-count`. Optional.
+
+*--repeat-count=N*
+  Stop after N occurrences. Mutually exclusive with `--repeat-until`.
+  Count-based rules omit an end date entirely. Optional.
+
+*--repeat-deadline=DAYS*
+  Add repeating deadlines; each copy appears in Today DAYS earlier.
+
+*--repeat-clear*
+  Remove the repeating schedule from the project.
+
+*--json*
+  Emit a structured result for repeat updates.
+
+*--db=PATH*
+  Path to the Things database. Overrides the THINGSDB environment variable.
+
 **EXAMPLES**
 
     things update-project --id=8TN1bbz946oBsRBGiQ2XBN "The new project title"
+
+    things update-project --id=8TN1bbz946oBsRBGiQ2XBN --repeat=week --repeat-mode=schedule
+
+    things update-project --id=8TN1bbz946oBsRBGiQ2XBN --repeat-clear
 
     things update-project --id=8TN1bbz946oBsRBGiQ2XBN "Set Title and add Notes
 
@@ -1127,7 +1209,7 @@ terminal Full Disk Access to read it.
 
 ## things repeating [OPTIONS...]
 
-Lists repeating tasks from the local Things database (read-only).
+Lists repeating tasks and projects from the local Things database (read-only).
 
 **OPTIONS**
 

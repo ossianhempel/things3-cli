@@ -135,8 +135,8 @@ func TestRepeatStateByIDDecodesCanonicalSemantics(t *testing.T) {
 	anchor := time.Date(2025, 3, 4, 0, 0, 0, 0, time.Local)
 	end := anchor.AddDate(0, 1, 0)
 	rule, err := plist.Marshal(map[string]any{
-		"tp": 0, "fu": 16, "fa": 2, "ia": float64(anchor.Unix()),
-		"ed": float64(end.Unix()), "ts": -3,
+		"tp": 0, "fu": 16, "fa": 2, "ia": float64(anchor.AddDate(0, 0, 3).Unix()),
+		"ed": float64(end.AddDate(0, 0, 3).Unix()), "ts": -3, "rc": 7,
 	}, plist.XMLFormat)
 	if err != nil {
 		t.Fatal(err)
@@ -176,6 +176,9 @@ func TestRepeatStateByIDDecodesCanonicalSemantics(t *testing.T) {
 	}
 	if state.Anchor != "2025-03-04" || state.EndDate != "2025-04-04" || state.DeadlineOffset == nil || *state.DeadlineOffset != 3 {
 		t.Fatalf("unexpected dates/offset: %#v", state)
+	}
+	if state.Count == nil || *state.Count != 7 {
+		t.Fatalf("unexpected repeat count: %#v", state)
 	}
 	bad, err := store.RepeatStateByID("BAD")
 	if err != nil {

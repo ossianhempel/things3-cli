@@ -102,6 +102,7 @@ var taskFieldAliases = map[string]string{
 	"repeat":                     "repeating",
 	"repeat-mode":                "repeat_mode",
 	"repeat-unit":                "repeat_unit",
+	"repeat-count":               "repeat_count",
 }
 
 var taskFieldHeaders = map[string]string{
@@ -129,6 +130,7 @@ var taskFieldHeaders = map[string]string{
 	"repeat_anchor":              "REPEAT_ANCHOR",
 	"repeat_end_date":            "REPEAT_END_DATE",
 	"repeat_deadline_offset":     "REPEAT_DEADLINE_OFFSET",
+	"repeat_count":               "REPEAT_COUNT",
 	"repeat_next_date":           "REPEAT_NEXT_DATE",
 	"repeat_scheduled":           "REPEAT_SCHEDULED",
 	"repeat_decode_warning":      "REPEAT_DECODE_WARNING",
@@ -222,6 +224,11 @@ func taskFieldValue(task db.Task, field string) any {
 	case "repeat_deadline_offset":
 		if task.Repeat != nil && task.Repeat.DeadlineOffset != nil {
 			return *task.Repeat.DeadlineOffset
+		}
+		return nil
+	case "repeat_count":
+		if task.Repeat != nil && task.Repeat.Count != nil {
+			return *task.Repeat.Count
 		}
 		return nil
 	case "repeat_next_date":

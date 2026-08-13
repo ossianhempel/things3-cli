@@ -100,25 +100,27 @@ Read commands need database access; repeat commands need writable database
 access. Because the database lives inside the Things app sandbox, both normally
 require Full Disk Access for your terminal or agent host.
 
-## Repeating todos
+## Repeating todos and projects
 
-Use `--repeat` flags with `add` or `update`
+Use `--repeat` flags with `add`, `add-project`, `update`, or `update-project`
 to create or change repeating templates. These changes write directly to the
 Things database, so Full Disk Access is required. Repeating updates require a
 single explicit title (for add) or `--id` (for update).
 
 Use `things templates` to list the hidden template rows that control future
-instances of recurring todos. Template UUIDs can be passed to `things update`
-when you need to move or edit the source template rather than the visible
-generated instance.
+instances of recurring todos and projects. Template UUIDs can be passed to
+`things update` / `things update-project` when you need to move or edit the
+source template rather than the visible generated instance.
 
 Supported patterns are every N day/week/month/year. Use after-completion mode
 (the default) when the next copy should be based on completing the current copy;
 use schedule mode for a fixed calendar cadence. `--repeat-start` anchors the
-recurrence pattern and is separate from the todo's ordinary `--when` date.
+recurrence pattern and is separate from the item's ordinary `--when` date.
 `--repeat-deadline=N` adds a deadline so each copy appears in Today N days
-earlier. Multi-day weekly patterns are not supported yet. Use `--repeat-until`
-to stop after a date. Repeating projects are not supported.
+earlier. Multi-day weekly patterns are not supported yet. Bound a schedule with
+either `--repeat-until=YYYY-MM-DD` (stop after a date) or `--repeat-count=N`
+(stop after N occurrences); the two are mutually exclusive and count-based
+rules omit an end date entirely.
 
 `--dry-run` previews the normalized repeat operation without opening Things or
 writing the database. After a real write, the CLI re-reads the template and only
@@ -126,12 +128,21 @@ reports verified repeat state. If a multi-stage add partially succeeds, its
 output identifies the completed and failed stages and includes a trusted UUID
 when available; re-read that UUID before retrying instead of guessing by title.
 
+Note: the CLI verifies the template row after writing. Things itself spawns the
+visible current occurrence on its own schedule (typically a nightly pass), so a
+verified template may not produce a visible instance until then.
+
 Examples:
 
 ```
 things add "Daily standup" --repeat=day --repeat-mode=schedule
 things update --id <uuid> --repeat=week --repeat-every=2
 things update --id <uuid> --repeat-clear
+things add-project "Sprint review" --area "Work" --repeat=week --repeat-mode=schedule
+things add-project "20 videos in 20 weeks" --repeat=week --repeat-start=2026-08-17 \
+  --repeat-count=20 --repeat-deadline=6
+things update-project --id <uuid> --repeat=month
+things update-project --id <uuid> --repeat-clear
 things update --id <uuid> --complete-checklist-item "Book hotel"
 things update --id <uuid> --incomplete-checklist-item "Book hotel"
 ```

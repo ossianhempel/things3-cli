@@ -43,7 +43,7 @@ func NewRepeatingCommand(app *App) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "repeating",
-		Short: "List repeating tasks from the Things database",
+		Short: "List repeating tasks and projects from the Things database",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			store, _, err := db.OpenDefault(dbPath)
 			if err != nil {
@@ -56,7 +56,7 @@ func NewRepeatingCommand(app *App) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			tasks, err := fetchTasks(store, store.Tasks, opts, false, []int{db.TaskTypeTodo})
+			tasks, err := fetchTasks(store, store.Tasks, opts, false, []int{db.TaskTypeTodo, db.TaskTypeProject})
 			if err != nil {
 				return formatDBError(err)
 			}
@@ -85,7 +85,7 @@ func NewTemplatesCommand(app *App) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "templates",
-		Short: "List repeating template tasks from the Things database",
+		Short: "List repeating template tasks and projects from the Things database",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			store, _, err := db.OpenDefault(dbPath)
 			if err != nil {
@@ -101,7 +101,7 @@ func NewTemplatesCommand(app *App) *cobra.Command {
 			if outputOpts.Format == "table" && len(outputOpts.Select) == 0 {
 				outputOpts.Select = []string{"uuid", "title", "repeat_active", "repeat_mode", "repeat_unit", "repeat_interval", "repeat_anchor", "repeat_next_date"}
 			}
-			tasks, err := fetchTasks(store, store.TemplatesTasks, opts, false, []int{db.TaskTypeTodo})
+			tasks, err := fetchTasks(store, store.TemplatesTasks, opts, false, []int{db.TaskTypeTodo, db.TaskTypeProject})
 			if err != nil {
 				return formatDBError(err)
 			}

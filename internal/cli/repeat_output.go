@@ -73,6 +73,7 @@ type repeatUpdatePlan struct {
 	targetID     string
 	usedTemplate bool
 	clear        bool
+	taskType     int
 	prepared     db.RepeatUpdate
 	expected     *db.RepeatState
 	spec         RepeatSpec
@@ -80,6 +81,10 @@ type repeatUpdatePlan struct {
 }
 
 func prepareRepeatUpdate(dbPath, requestedID string, spec RepeatSpec, dryRun bool) (*repeatUpdatePlan, error) {
+	return prepareRepeatUpdateForType(dbPath, requestedID, spec, dryRun, db.TaskTypeTodo)
+}
+
+func prepareRepeatUpdateForType(dbPath, requestedID string, spec RepeatSpec, dryRun bool, taskType int) (*repeatUpdatePlan, error) {
 	var store *db.Store
 	var err error
 	var resolvedPath string
@@ -98,7 +103,11 @@ func prepareRepeatUpdate(dbPath, requestedID string, spec RepeatSpec, dryRun boo
 	if err := store.ValidateRepeatSchema(); err != nil {
 		return fail(err)
 	}
-	targetID, usedTemplate, err := resolveRepeatTarget(store, requestedID, db.TaskTypeTodo)
+	targetID, usedTemplate, err := resolveRepeatTarget(store, requestedID, taskType)
+	if err != nil {
+		return fail(err)
+	}
+	target, err := store.RepeatTargetByID(targetID)
 	if err != nil {
 		return fail(err)
 	}
@@ -107,6 +116,7 @@ func prepareRepeatUpdate(dbPath, requestedID string, spec RepeatSpec, dryRun boo
 		targetID:     targetID,
 		usedTemplate: usedTemplate,
 		clear:        spec.Clear,
+		taskType:     taskType,
 		spec:         spec,
 		result: repeatResult{
 			SchemaVersion: 1,
@@ -115,6 +125,13 @@ func prepareRepeatUpdate(dbPath, requestedID string, spec RepeatSpec, dryRun boo
 			IDs:           repeatIDs{Requested: requestedID, Template: targetID},
 			Database:      repeatDatabase{Path: store.Path(), Source: repeatDatabaseSource(dbPath, resolvedPath)},
 		},
+	}
+	if spec.Spec.Count != nil && target.InstanceCount >= *spec.Spec.Count {
+		// A repeat count is a total for the template. On an existing template
+		// that has already spawned instances, the requested total must be
+		// larger than the number already created, or the schedule would either
+		// stop immediately or drop prior occurrences.
+		return fail(fmt.Errorf("Error: --repeat-count=%d is not greater than the %d occurrences already created; pass a total that includes prior occurrences or use --repeat-clear first", *spec.Spec.Count, target.InstanceCount))
 	}
 	if spec.Clear {
 		plan.result.Action = "clear"
@@ -143,7 +160,7 @@ func (p *repeatUpdatePlan) executeMutation() error {
 	if err != nil {
 		p.result.Partial = len(p.result.Stages) > 0
 		p.result.addStage(repeatStageDatabase, repeatStatusFailed)
-		p.result.Recovery = []repeatRecovery{{Argv: recoveryArgv(p.targetID, p.spec, p.result.Database.Path)}}
+		p.result.Recovery = []repeatRecovery{{Argv: recoveryArgvForType(p.targetID, p.spec, p.result.Database.Path, p.taskType)}}
 		return err
 	}
 	status := repeatStatusApplied
@@ -155,7 +172,7 @@ func (p *repeatUpdatePlan) executeMutation() error {
 	p.result.Repeat = actual
 	if err != nil {
 		p.result.failStage(repeatStageVerification)
-		p.result.Recovery = []repeatRecovery{{Argv: recoveryArgv(p.targetID, p.spec, p.result.Database.Path)}}
+		p.result.Recovery = []repeatRecovery{{Argv: recoveryArgvForType(p.targetID, p.spec, p.result.Database.Path, p.taskType)}}
 		return err
 	}
 	p.result.markVerified()
@@ -208,6 +225,9 @@ func renderRepeatResult(out io.Writer, result repeatResult, asJSON bool) error {
 		if result.Repeat.EndDate != "" {
 			fmt.Fprintf(out, "; until %s", result.Repeat.EndDate)
 		}
+		if result.Repeat.Count != nil {
+			fmt.Fprintf(out, "; count %d", *result.Repeat.Count)
+		}
 		if result.Repeat.DeadlineOffset != nil {
 			fmt.Fprintf(out, "; deadline offset %d", *result.Repeat.DeadlineOffset)
 		}
@@ -230,7 +250,7 @@ func expectedRepeatState(spec repeat.Spec) *db.RepeatState {
 	}
 	unit := map[repeat.Unit]string{repeat.UnitDay: "day", repeat.UnitWeek: "week", repeat.UnitMonth: "month", repeat.UnitYear: "year"}[spec.Unit]
 	anchor := spec.Anchor
-	state := &db.RepeatState{Active: true, Paused: false, Scheduled: true, Mode: mode, Unit: unit, Interval: spec.Every, Anchor: anchor.Format("2006-01-02"), DeadlineOffset: spec.DeadlineOffset}
+	state := &db.RepeatState{Active: true, Paused: false, Scheduled: true, Mode: mode, Unit: unit, Interval: spec.Every, Anchor: anchor.Format("2006-01-02"), DeadlineOffset: spec.DeadlineOffset, Count: spec.Count}
 	if spec.EndDate != nil {
 		state.EndDate = spec.EndDate.Format("2006-01-02")
 	}
@@ -264,7 +284,15 @@ func redactURLIntent(raw string) string {
 }
 
 func recoveryArgv(id string, spec RepeatSpec, dbPath string) []string {
-	argv := []string{"things", "update", "--id", id}
+	return recoveryArgvForType(id, spec, dbPath, db.TaskTypeTodo)
+}
+
+func recoveryArgvForType(id string, spec RepeatSpec, dbPath string, taskType int) []string {
+	command := "update"
+	if taskType == db.TaskTypeProject {
+		command = "update-project"
+	}
+	argv := []string{"things", command, "--id", id}
 	if strings.TrimSpace(dbPath) != "" {
 		argv = append(argv, "--db", dbPath)
 	}
@@ -282,6 +310,9 @@ func recoveryArgv(id string, spec RepeatSpec, dbPath string) []string {
 	}
 	if spec.Spec.DeadlineOffset != nil {
 		argv = append(argv, "--repeat-deadline", fmt.Sprint(*spec.Spec.DeadlineOffset))
+	}
+	if spec.Spec.Count != nil {
+		argv = append(argv, "--repeat-count", fmt.Sprint(*spec.Spec.Count))
 	}
 	return argv
 }
@@ -310,6 +341,9 @@ func verifyRepeatState(store *db.Store, id string, expected *db.RepeatState, cle
 	}
 	if (actual.DeadlineOffset == nil) != (expected.DeadlineOffset == nil) || actual.DeadlineOffset != nil && *actual.DeadlineOffset != *expected.DeadlineOffset {
 		return actual, fmt.Errorf("repeat deadline verification failed for %s", id)
+	}
+	if (actual.Count == nil) != (expected.Count == nil) || actual.Count != nil && *actual.Count != *expected.Count {
+		return actual, fmt.Errorf("repeat count verification failed for %s", id)
 	}
 	return actual, nil
 }

@@ -16,6 +16,7 @@ type RepeatOptions struct {
 	Start          string
 	Until          string
 	DeadlineOffset int
+	Count          int
 	Clear          bool
 }
 
@@ -34,6 +35,7 @@ func addRepeatFlags(cmd *cobra.Command, opts *RepeatOptions, allowClear bool) {
 	flags.StringVar(&opts.Start, "repeat-start", "", "Repeat anchor date (YYYY-MM-DD)")
 	flags.StringVar(&opts.Until, "repeat-until", "", "Repeat until date (YYYY-MM-DD)")
 	flags.IntVar(&opts.DeadlineOffset, "repeat-deadline", 0, "Add repeating deadlines (days earlier)")
+	flags.IntVar(&opts.Count, "repeat-count", 0, "Stop after this many occurrences (omit for unlimited)")
 	if allowClear {
 		flags.BoolVar(&opts.Clear, "repeat-clear", false, "Remove repeating schedule")
 	}
@@ -46,7 +48,8 @@ func parseRepeatSpec(cmd *cobra.Command, opts RepeatOptions) (RepeatSpec, error)
 			cmd.Flags().Changed("repeat-every") ||
 			cmd.Flags().Changed("repeat-start") ||
 			cmd.Flags().Changed("repeat-until") ||
-			cmd.Flags().Changed("repeat-deadline") {
+			cmd.Flags().Changed("repeat-deadline") ||
+			cmd.Flags().Changed("repeat-count") {
 			return RepeatSpec{}, fmt.Errorf("Error: --repeat-clear cannot be combined with other repeat flags")
 		}
 		return RepeatSpec{Enabled: true, Clear: true}, nil
@@ -57,13 +60,20 @@ func parseRepeatSpec(cmd *cobra.Command, opts RepeatOptions) (RepeatSpec, error)
 		cmd.Flags().Changed("repeat-every") ||
 		cmd.Flags().Changed("repeat-start") ||
 		cmd.Flags().Changed("repeat-until") ||
-		cmd.Flags().Changed("repeat-deadline")
+		cmd.Flags().Changed("repeat-deadline") ||
+		cmd.Flags().Changed("repeat-count")
 
 	if !changed {
 		return RepeatSpec{Enabled: false}, nil
 	}
 	if opts.Rule == "" {
 		return RepeatSpec{}, fmt.Errorf("Error: --repeat is required when using repeat flags")
+	}
+	if cmd.Flags().Changed("repeat-count") && opts.Count <= 0 {
+		return RepeatSpec{}, fmt.Errorf("Error: --repeat-count must be a positive integer")
+	}
+	if cmd.Flags().Changed("repeat-count") && cmd.Flags().Changed("repeat-until") {
+		return RepeatSpec{}, fmt.Errorf("Error: --repeat-count and --repeat-until are mutually exclusive; use one to bound the schedule")
 	}
 
 	mode, err := repeat.ParseMode(opts.Mode)
@@ -97,6 +107,12 @@ func parseRepeatSpec(cmd *cobra.Command, opts RepeatOptions) (RepeatSpec, error)
 		deadlineOffset = &value
 	}
 
+	var count *int
+	if cmd.Flags().Changed("repeat-count") {
+		value := opts.Count
+		count = &value
+	}
+
 	spec := repeat.Spec{
 		Mode:           mode,
 		Unit:           unit,
@@ -104,6 +120,7 @@ func parseRepeatSpec(cmd *cobra.Command, opts RepeatOptions) (RepeatSpec, error)
 		Anchor:         anchor,
 		EndDate:        until,
 		DeadlineOffset: deadlineOffset,
+		Count:          count,
 	}
 
 	return RepeatSpec{Enabled: true, Spec: spec}, nil

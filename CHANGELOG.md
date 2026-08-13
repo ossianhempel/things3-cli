@@ -6,6 +6,21 @@ The format is based on Keep a Changelog, and this project adheres to
 Semantic Versioning.
 
 ## [Unreleased]
+- Added `--repeat-count=N` to stop a repeating schedule after N occurrences,
+  mutually exclusive with `--repeat-until`. Count-based rules omit an end date
+  entirely, matching Things' own encoding (`rc` in the recurrence rule).
+- Fixed repeat anchors with a deadline: `ia` is now shifted by the deadline
+  offset so occurrences land on the anchor weekday, and a future anchor is
+  itself the first instance.
+- Added repeating project support: `add-project --repeat=...` and
+  `update-project --repeat=...` create or clear repeating project templates,
+  matching the repeat semantics already available for todos. Repeat flags on
+  projects support after-completion or schedule mode, every N units, an anchor
+  date, a stop date, a repeat count, and repeating deadlines.
+- `things templates` and `things repeating` now include repeating projects, not
+  just repeating todos.
+- Documented that Things spawns the visible current occurrence on its own
+  schedule (typically a nightly pass) after a repeat template is verified.
 
 ## [0.4.0] - 2026-07-18
 - Fixed repeating todos remaining paused as Someday templates after applying a repeat rule.

@@ -75,6 +75,7 @@ type RepeatState struct {
 	Anchor         string `json:"anchor,omitempty"`
 	EndDate        string `json:"end_date,omitempty"`
 	DeadlineOffset *int   `json:"deadline_offset,omitempty"`
+	Count          *int   `json:"count,omitempty"`
 	NextDate       string `json:"next_date,omitempty"`
 	Scheduled      bool   `json:"scheduled"`
 	StartBucket    *int   `json:"start_bucket,omitempty"`
