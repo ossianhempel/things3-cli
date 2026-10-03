@@ -92,6 +92,13 @@ Things database to list content:
 `today_index_reference_date` and `today_index` database fields. Select the
 ordering metadata with `--select start_bucket,today_index_reference_date,today_index`.
 
+Active lists (`today`, `tasks`, `search`, and the other list views) skip to-dos
+that are still open inside a trashed, completed, or canceled project, matching
+what Things shows. Completing a project archives whatever is left open in it.
+Those to-dos remain reachable by UUID with `show --id`, and children that were
+closed along with their project still appear in `logbook`, `completed`, and
+`canceled`.
+
 By default it looks for the Things database in your user Library under the
 Things app group container (the `ThingsData-*` folder). You can override the
 path with `THINGSDB` or `--db`.

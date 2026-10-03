@@ -6,6 +6,7 @@ The format is based on Keep a Changelog, and this project adheres to
 Semantic Versioning.
 
 ## [Unreleased]
+- Fixed `today`, `tasks`, `search`, and the other active list views showing to-dos left open inside completed or canceled projects, which Things hides.
 - Added `--repeat-count=N` to stop a repeating schedule after N occurrences,
   mutually exclusive with `--repeat-until`. Count-based rules omit an end date
   entirely, matching Things' own encoding (`rc` in the recurrence rule).
