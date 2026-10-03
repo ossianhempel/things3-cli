@@ -6,6 +6,12 @@ The format is based on Keep a Changelog, and this project adheres to
 Semantic Versioning.
 
 ## [Unreleased]
+
+## [0.5.0] - 2026-10-03
+- Added `--completed-after` and `--completed-before` to filter list commands by
+  completion date, and a `completed` sort field (aliases `stop`, `stop_date`).
+- Documented `logbook`, `completed`, `canceled`, and `logtoday` in the Things
+  skill so agents can find completed tasks.
 - Fixed `today`, `tasks`, `search`, and the other active list views showing to-dos left open inside completed or canceled projects, which Things hides.
 - Added `--repeat-count=N` to stop a repeating schedule after N occurrences,
   mutually exclusive with `--repeat-until`. Count-based rules omit an end date
