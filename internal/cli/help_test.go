@@ -62,7 +62,7 @@ func TestAddHelpCommand(t *testing.T) {
 	}
 }
 
-func TestAddProjectHelpRejectsRepeatingProjects(t *testing.T) {
+func TestAddProjectHelpSupportsRepeatingProjects(t *testing.T) {
 	out := &bytes.Buffer{}
 	app := &App{In: strings.NewReader(""), Out: out, Err: &bytes.Buffer{}, Launcher: &recordLauncher{}}
 	root := NewRoot(app)
@@ -72,12 +72,12 @@ func TestAddProjectHelpRejectsRepeatingProjects(t *testing.T) {
 	if err := root.Execute(); err != nil && err != ErrHelpPrinted {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(out.String(), "Repeating projects are not supported") {
-		t.Fatalf("add-project help should state the limitation: %q", out.String())
+	if !strings.Contains(out.String(), "Repeating projects are supported") {
+		t.Fatalf("add-project help should advertise repeating projects: %q", out.String())
 	}
-	for _, unsupported := range []string{"--repeat=UNIT", "--repeat-mode=MODE", "--repeat-start=DATE"} {
-		if strings.Contains(out.String(), unsupported) {
-			t.Fatalf("add-project help advertises unsupported option %q", unsupported)
+	for _, supported := range []string{"--repeat=UNIT", "--repeat-mode=MODE", "--repeat-start=DATE", "--repeat-until=DATE", "--repeat-deadline=DAYS"} {
+		if !strings.Contains(out.String(), supported) {
+			t.Fatalf("add-project help should advertise %q", supported)
 		}
 	}
 }

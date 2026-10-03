@@ -131,6 +131,37 @@ func TestRepeatUpdateRejectsStatusChanges(t *testing.T) {
 	}
 }
 
+func TestRepeatUpdateRejectsDuplicate(t *testing.T) {
+	launcher := &recordLauncher{}
+	app := &App{In: strings.NewReader(""), Out: &bytes.Buffer{}, Err: &bytes.Buffer{}, Launcher: launcher}
+	root := NewRoot(app)
+	root.SetArgs([]string{"update", "--id", "T1", "--repeat=day", "--duplicate"})
+	if err := root.Execute(); err == nil || !strings.Contains(err.Error(), "--duplicate cannot be combined") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(launcher.args) != 0 {
+		t.Fatalf("duplicate+repeat launched Things: %#v", launcher.args)
+	}
+}
+
+func TestRepeatUpdateRejectsCountNotGreaterThanExisting(t *testing.T) {
+	dbPath := writeTestDB(t)
+	conn, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := conn.Exec(`UPDATE TMTask SET rt1_instanceCreationCount = 5, rt1_recurrenceRule = X'01', start = 2, startBucket = 0 WHERE uuid = 'T1'`); err != nil {
+		t.Fatal(err)
+	}
+	conn.Close()
+	app := &App{In: strings.NewReader(""), Out: &bytes.Buffer{}, Err: &bytes.Buffer{}, Launcher: &recordLauncher{}}
+	root := NewRoot(app)
+	root.SetArgs([]string{"update", "--db", dbPath, "--id", "T1", "--repeat=day", "--repeat-count=3"})
+	if err := root.Execute(); err == nil || !strings.Contains(err.Error(), "not greater than the 5 occurrences") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestUpdateCommandRequiresAuthToken(t *testing.T) {
 	t.Setenv("THINGS_AUTH_TOKEN", "")
 	launcher := &recordLauncher{}

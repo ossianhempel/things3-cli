@@ -35,6 +35,7 @@ type Spec struct {
 	Anchor         time.Time
 	EndDate        *time.Time
 	DeadlineOffset *int
+	Count          *int
 }
 
 // ParseMode parses a repeat mode string.
@@ -78,7 +79,26 @@ func BuildUpdate(spec Spec) (db.RepeatUpdate, error) {
 			return db.RepeatUpdate{}, fmt.Errorf("repeat end date must be on or after the start date")
 		}
 	}
-	offsets, err := offsetsFor(anchor, spec.Unit)
+	// Things anchors the recurrence on an "interval anchor" (ia) and applies
+	// the deadline offset (ts) so the visible occurrence lands on the anchor's
+	// weekday: occurrence = ia + ts. When a repeat deadline is requested we
+	// shift ia forward by the offset so occurrences still fall on the anchor
+	// weekday, and the `of` offset is computed from the shifted anchor.
+	//
+	// The `of.wd` field is the weekday of ia (informational), not the
+	// recurrence weekday: Things derives the visible occurrence from ia + ts.
+	// The app's own encoding proves this — a Monday-anchored weekly rule with a
+	// 6-day deadline stores wd=0 (Sunday) and ia=Sunday yet generates Monday
+	// occurrences. Keep wd = weekday(shifted ia) to match the app.
+	deadlineOffset := 0
+	if spec.DeadlineOffset != nil {
+		deadlineOffset = *spec.DeadlineOffset
+	}
+	ruleAnchor := anchor
+	if deadlineOffset > 0 {
+		ruleAnchor = anchor.AddDate(0, 0, deadlineOffset)
+	}
+	offsets, err := offsetsFor(ruleAnchor, spec.Unit)
 	if err != nil {
 		return db.RepeatUpdate{}, err
 	}
@@ -101,17 +121,36 @@ func BuildUpdate(spec Spec) (db.RepeatUpdate, error) {
 		deadline = &sentinel
 	}
 
+	// `rc` is Things' repeat count. Zero is the app's own encoding for an
+	// unlimited schedule (every app-created unbounded rule in the database
+	// stores rc=0); a positive value bounds the total number of occurrences.
+	// Count-based rules omit `ed` entirely, so a rule carries either `rc` or
+	// `ed`, never both.
 	rule := map[string]any{
-		"ed":  float64(endDate.Unix()),
 		"fa":  spec.Every,
 		"fu":  unitValue(spec.Unit),
-		"ia":  float64(anchor.Unix()),
+		"ia":  float64(ruleAnchor.Unix()),
 		"of":  offsets,
 		"rc":  0,
 		"rrv": 4,
 		"sr":  float64(anchor.Unix()),
 		"tp":  modeValue,
 		"ts":  ts,
+	}
+	if spec.Count != nil {
+		rule["rc"] = *spec.Count
+	} else {
+		// Unbounded rules carry the year-4001 far-future sentinel exactly as
+		// the app stores them (every app-created unlimited rule in the database
+		// has ed=4001); it is the "never" boundary, not a real cutoff. Keep the
+		// encoded end boundary in the same frame as the shifted interval anchor
+		// so a bounded schedule does not lose its final occurrence. Decoding
+		// subtracts the offset again for the user-facing end date.
+		encodedEnd := endDate
+		if deadlineOffset > 0 {
+			encodedEnd = endDate.AddDate(0, 0, deadlineOffset)
+		}
+		rule["ed"] = float64(encodedEnd.Unix())
 	}
 
 	encoded, err := plist.Marshal(rule, plist.XMLFormat)
@@ -123,9 +162,20 @@ func BuildUpdate(spec Spec) (db.RepeatUpdate, error) {
 	start := thingsDateValue(startDate)
 	var next *int
 	if spec.Mode == ModeSchedule {
-		nextDate, err := nextScheduleDate(anchor, startDate, spec.Unit, spec.Every)
-		if err != nil {
-			return db.RepeatUpdate{}, err
+		var nextDate time.Time
+		// A future anchor is itself the first occurrence; otherwise compute the
+		// next occurrence after the anchor on the recurrence weekday. Because
+		// the CLI only creates fresh templates (rt1_instanceCreationCount starts
+		// at 0), a past anchor never materializes skipped occurrences: the app
+		// spawns exactly `rc` instances from this first eligible date onward.
+		today := normalizeDate(time.Now())
+		if anchor.After(today) {
+			nextDate = anchor
+		} else {
+			nextDate, err = nextScheduleDate(anchor, startDate, spec.Unit, spec.Every)
+			if err != nil {
+				return db.RepeatUpdate{}, err
+			}
 		}
 		value := thingsDateValue(nextDate)
 		next = &value

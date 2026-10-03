@@ -99,6 +99,24 @@ func TestProjectsAndTasksQueries(t *testing.T) {
 		t.Fatalf("unexpected template tasks: %#v", templates)
 	}
 
+	if _, err := conn.Exec(`UPDATE TMTask SET rt1_recurrenceRule = X'01', start = 2, startBucket = 0 WHERE uuid = 'P1'`); err != nil {
+		t.Fatalf("make project repeating: %v", err)
+	}
+	templatesWithProjects, err := store.TemplatesTasks(TaskFilter{Status: &status, ExcludeTrashedContext: true, Types: []int{TaskTypeTodo, TaskTypeProject}})
+	if err != nil {
+		t.Fatalf("template tasks with projects: %v", err)
+	}
+	if len(templatesWithProjects) != 2 {
+		t.Fatalf("expected todo + project templates, got %#v", templatesWithProjects)
+	}
+	repeatingProjects, err := store.Tasks(TaskFilter{Status: &status, ExcludeTrashedContext: true, Types: []int{TaskTypeProject}, RepeatingOnly: true})
+	if err != nil {
+		t.Fatalf("repeating projects: %v", err)
+	}
+	if len(repeatingProjects) != 1 || repeatingProjects[0].Title != "Project One" || !repeatingProjects[0].Repeating {
+		t.Fatalf("unexpected repeating projects: %#v", repeatingProjects)
+	}
+
 	searched, err := store.Tasks(TaskFilter{Search: "notes", Status: &status, ExcludeTrashedContext: true, Types: []int{TaskTypeTodo}})
 	if err != nil {
 		t.Fatalf("search tasks: %v", err)

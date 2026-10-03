@@ -43,6 +43,9 @@ func NewUpdateCommand(app *App) *cobra.Command {
 			if repeatSpec.Enabled && (opts.Completed || opts.Canceled) {
 				return fmt.Errorf("Error: --completed/--canceled cannot be combined with repeat changes because repeat templates must remain incomplete")
 			}
+			if repeatSpec.Enabled && opts.Duplicate {
+				return fmt.Errorf("Error: --duplicate cannot be combined with repeat changes because the repeat rule would apply to the source template, not the duplicate")
+			}
 			if repeatJSON && !repeatSpec.Enabled {
 				return fmt.Errorf("Error: --json is currently supported only for repeat updates")
 			}

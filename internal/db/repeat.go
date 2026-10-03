@@ -18,6 +18,7 @@ type RepeatTarget struct {
 	Trashed             bool
 	Repeating           bool
 	RepeatingTemplateID string
+	InstanceCount       int
 }
 
 // RepeatUpdate describes the repeat fields to apply to a task or project.
@@ -73,11 +74,12 @@ func (s *Store) RepeatTargetByID(id string) (*RepeatTarget, error) {
 	var target RepeatTarget
 	var repeating sql.NullInt64
 	var repeatingTemplate sql.NullString
+	var instanceCount sql.NullInt64
 	if err := s.conn.QueryRow(
-		`SELECT uuid, title, type, status, trashed, (rt1_recurrenceRule IS NOT NULL), rt1_repeatingTemplate
+		`SELECT uuid, title, type, status, trashed, (rt1_recurrenceRule IS NOT NULL), rt1_repeatingTemplate, COALESCE(rt1_instanceCreationCount, 0)
 		 FROM TMTask WHERE uuid = ?`,
 		id,
-	).Scan(&target.UUID, &target.Title, &target.Type, &target.Status, &target.Trashed, &repeating, &repeatingTemplate); err != nil {
+	).Scan(&target.UUID, &target.Title, &target.Type, &target.Status, &target.Trashed, &repeating, &repeatingTemplate, &instanceCount); err != nil {
 		return nil, err
 	}
 	if repeating.Valid {
@@ -86,6 +88,7 @@ func (s *Store) RepeatTargetByID(id string) (*RepeatTarget, error) {
 	if repeatingTemplate.Valid {
 		target.RepeatingTemplateID = repeatingTemplate.String
 	}
+	target.InstanceCount = int(instanceCount.Int64)
 	return &target, nil
 }
 
@@ -358,6 +361,30 @@ func decodeRepeatRule(rule []byte, hasDeadline bool, state *RepeatState) {
 	if offset, ok := plistInt(values["ts"]); ok && hasDeadline {
 		v := -offset
 		state.DeadlineOffset = &v
+		// The encoded interval anchor and end boundary are stored in the
+		// shifted deadline frame; restore both to user-facing coordinates
+		// (the dates supplied via --repeat-start / --repeat-until) for
+		// verification and output. This matches Things' own encoding: the app
+		// stores ia = requested anchor + offset so occurrences land on the
+		// anchor weekday. Rules written by the released CLI set ia directly
+		// with ts<0 and therefore placed occurrences offset days off the
+		// anchor weekday; no such correct legacy encoding exists to preserve.
+		if state.Anchor != "" {
+			parsed, err := time.ParseInLocation("2006-01-02", state.Anchor, time.Local)
+			if err == nil {
+				state.Anchor = parsed.AddDate(0, 0, offset).Format("2006-01-02")
+			}
+		}
+		if state.EndDate != "" {
+			parsed, err := time.ParseInLocation("2006-01-02", state.EndDate, time.Local)
+			if err == nil {
+				state.EndDate = parsed.AddDate(0, 0, offset).Format("2006-01-02")
+			}
+		}
+	}
+	if count, ok := plistInt(values["rc"]); ok && count > 0 {
+		v := count
+		state.Count = &v
 	}
 }
 

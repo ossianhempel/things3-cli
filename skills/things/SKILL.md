@@ -55,16 +55,17 @@ Write (URL scheme)
 Repeating (database writes)
 - Use after-completion mode (the default) when the next copy should depend on completion: `things update --id <UUID> --repeat=week --repeat-every=2`.
 - Use schedule mode for a fixed calendar cadence: `things add "Daily standup" --repeat=day --repeat-mode=schedule`.
-- `--repeat-start=YYYY-MM-DD` anchors weekday/month/day recurrence. It is not the todo's ordinary `--when` schedule.
+- `--repeat-start=YYYY-MM-DD` anchors weekday/month/day recurrence. It is not the item's ordinary `--when` schedule.
 - `--repeat-deadline=N` adds a deadline so each copy appears in Today N days earlier.
-- `--repeat-until=YYYY-MM-DD` stops recurrence after that date.
+- Bound a schedule with either `--repeat-until=YYYY-MM-DD` (stop after a date) or `--repeat-count=N` (stop after N occurrences). The two are mutually exclusive; count-based rules omit an end date entirely. `--repeat-count=20` creates exactly 20 occurrences.
 - `--repeat-clear` removes the repeat rule; omission leaves the existing rule unchanged.
-- Repeating projects are unsupported. Repeat flags belong to `add` and `update` for todos.
+- Repeating projects are supported: `things add-project "Title" --repeat=week --repeat-mode=schedule` and `things update-project --id <UUID> --repeat=...`. Projects support the same repeat flags as todos.
+- `things repeating` and `things templates` include both repeating tasks and projects.
 
 Repeat changes must use the full workflow:
 
 ```sh
-# Existing todo: resolve and retain the UUID first.
+# Existing todo or project: resolve and retain the UUID first.
 things templates --search "Monthly bill" --format json --select uuid,title
 things update --id <TEMPLATE_UUID> --repeat=month --repeat-mode=schedule \
   --repeat-start=2026-08-01 --repeat-deadline=2 --dry-run
@@ -73,7 +74,7 @@ things update --id <TEMPLATE_UUID> --repeat=month --repeat-mode=schedule \
 things templates --search "Monthly bill" --format json
 ```
 
-Treat successful output as verified template state, not as proof that Things has already spawned a visible occurrence. Repeating adds first create a todo through Things, then locate and update its database row. If output reports partial success, a non-repeating todo may remain:
+Treat successful output as verified template state, not as proof that Things has already spawned a visible occurrence. Repeating adds first create the item through Things, then locate and update its database row. Things spawns the visible current occurrence on its own schedule (typically a nightly pass), so a verified template may not produce a visible instance until then. If output reports partial success, a non-repeating item may remain:
 
 - When a trusted UUID is reported, re-read that UUID and retry only the missing repeat stage.
 - When creation succeeded but identity is unknown, search using the exact title plus creation time/context and ask the human to disambiguate multiple candidates.
@@ -83,7 +84,7 @@ Filters + DB
 - Use `--db` or `THINGSDB` to point to a specific Things database. Accepted forms: the `main.sqlite` file, the `Things Database.thingsdatabase` directory, or the parent `ThingsData-*` directory.
 - Common filters: `--filter-project`, `--filter-area`, `--filter-tag`, `--status`, `--search`, `--limit`, `--offset`.
 - Rich query: `--query` supports boolean ops, field predicates, and regex (e.g. `title:/regex/ AND tag:work`).
-- Repeating tasks: `things repeating` or `--query 'repeating:true'`.
+- Repeating tasks and projects: `things repeating` or `--query 'repeating:true'`.
 - Repeating templates: `things templates --area "Area Name"` lists hidden template rows that control future recurring instances.
 - Date filters: `--created-before/after`, `--modified-before/after`, `--due-before`, `--start-before`.
 - URL filter: `--has-url`.

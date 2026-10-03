@@ -25,7 +25,7 @@ for required in \
 	'**Identify**' \
 	'**Preview**' \
 	'**Verify**' \
-	'Repeating projects are unsupported' \
+	'Repeating projects are supported' \
 	'partial success' \
 	'Full Disk Access'
 do

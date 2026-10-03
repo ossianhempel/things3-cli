@@ -75,7 +75,7 @@ List upcoming tasks from the Things database\.
 .LP
 .TP
 \fIthings repeating\fP
-List repeating tasks from the Things database\.
+List repeating tasks and projects from the Things database\.
 .LP
 .TP
 \fIthings anytime\fP
@@ -303,7 +303,11 @@ Anchor date for the repeat rule (YYYY\-MM\-DD)\. Defaults to today\.
 .LP
 .TP
 \fI\-\-repeat\-until\[eq]DATE\fP
-Stop repeating after the given date (YYYY\-MM\-DD)\. Optional\.
+Stop repeating after the given date (YYYY\-MM\-DD)\. Mutually exclusive with \fB--repeat-count\fR\. Optional\.
+.LP
+.TP
+\fI\-\-repeat\-count\[eq]N\fP
+Stop after N occurrences\. Mutually exclusive with \fB--repeat-until\fR\. Count\-based rules omit an end date entirely\. Optional\.
 .LP
 .TP
 \fI\-\-repeat\-deadline\[eq]DAYS\fP
@@ -529,7 +533,11 @@ Anchor date for the repeat rule (YYYY\-MM\-DD)\. Defaults to today\.
 .LP
 .TP
 \fI\-\-repeat\-until\[eq]DATE\fP
-Stop repeating after the given date (YYYY\-MM\-DD)\. Optional\.
+Stop repeating after the given date (YYYY\-MM\-DD)\. Mutually exclusive with \fB--repeat-count\fR\. Optional\.
+.LP
+.TP
+\fI\-\-repeat\-count\[eq]N\fP
+Stop after N occurrences\. Mutually exclusive with \fB--repeat-until\fR\. Count\-based rules omit an end date entirely\. Optional\.
 .LP
 .TP
 \fI\-\-repeat\-deadline\[eq]DAYS\fP
@@ -647,8 +655,13 @@ remaining lines are set as the todo\[cq]s notes\. Notes set this way take
 precedence over the \fB--notes=\fR option\.
 .LP
 .PP
-Repeating projects are not supported\. Repeat flags apply only to todos through
-\fBthings add\fR and \fBthings update\fR\.
+ Repeating projects are supported\. Repeat flags create a repeating project
+ template, matching the schedule behavior of repeating todos: after\-completion
+ (default) or schedule mode, every N units, an anchor date via \fB--repeat-start\fR,
+ an optional stop date via \fB--repeat-until\fR, an optional occurrence count via
+ \fB--repeat-count\fR, and optional repeating deadlines via \fB--repeat-deadline\fR\.
+ Repeat operations require writable database access and verify the template
+ after writing; Things spawns the current occurrence on its own schedule\.
 .LP
 .PP
 \fBOPTIONS\fP
@@ -710,6 +723,42 @@ specified\. Optional\.
 \fI\-\-todo\[eq]TITLE\fP
 Title of a todo to add to the project\. Can be specified more than once
 to add multiple todos\. Optional\.
+.LP
+.TP
+\fI\-\-repeat\[eq]UNIT\fP
+Create a repeating template\. Units: day, week, month, year\.
+.LP
+.TP
+\fI\-\-repeat\-mode\[eq]MODE\fP
+Repeat mode: after\-completion (default) or schedule\.
+.LP
+.TP
+\fI\-\-repeat\-every\[eq]N\fP
+Repeat every N units\. Default: 1\.
+.LP
+.TP
+\fI\-\-repeat\-start\[eq]DATE\fP
+Anchor date for the repeat rule (YYYY\-MM\-DD)\. Defaults to today\.
+.LP
+.TP
+\fI\-\-repeat\-until\[eq]DATE\fP
+Stop repeating after the given date (YYYY\-MM\-DD)\. Mutually exclusive with \fB--repeat-count\fR\. Optional\.
+.LP
+.TP
+\fI\-\-repeat\-count\[eq]N\fP
+Stop after N occurrences\. Mutually exclusive with \fB--repeat-until\fR\. Count\-based rules omit an end date entirely\. Optional\.
+.LP
+.TP
+\fI\-\-repeat\-deadline\[eq]DAYS\fP
+Add repeating deadlines; each copy appears in Today DAYS earlier\.
+.LP
+.TP
+\fI\-\-json\fP
+Emit a structured result for repeat adds\.
+.LP
+.TP
+\fI\-\-db\[eq]PATH\fP
+Path to the Things database\. Overrides the THINGSDB environment variable\.
 .LP
 .PP
 \fBEXAMPLES\fP
@@ -908,6 +957,46 @@ date is in the future\. Optional\.
 \fI\-\-todo\[eq]TITLE\fP
 Title of a todo to add to the project\. Can be specified more than once
 to add multiple todos\. Optional\.
+.LP
+.TP
+\fI\-\-repeat\[eq]UNIT\fP
+Create a repeating template\. Units: day, week, month, year\.
+.LP
+.TP
+\fI\-\-repeat\-mode\[eq]MODE\fP
+Repeat mode: after\-completion (default) or schedule\.
+.LP
+.TP
+\fI\-\-repeat\-every\[eq]N\fP
+Repeat every N units\. Default: 1\.
+.LP
+.TP
+\fI\-\-repeat\-start\[eq]DATE\fP
+Anchor date for the repeat rule (YYYY\-MM\-DD)\. Defaults to today\.
+.LP
+.TP
+\fI\-\-repeat\-until\[eq]DATE\fP
+Stop repeating after the given date (YYYY\-MM\-DD)\. Mutually exclusive with \fB--repeat-count\fR\. Optional\.
+.LP
+.TP
+\fI\-\-repeat\-count\[eq]N\fP
+Stop after N occurrences\. Mutually exclusive with \fB--repeat-until\fR\. Count\-based rules omit an end date entirely\. Optional\.
+.LP
+.TP
+\fI\-\-repeat\-deadline\[eq]DAYS\fP
+Add repeating deadlines; each copy appears in Today DAYS earlier\.
+.LP
+.TP
+\fI\-\-repeat\-clear\fP
+Remove the repeating schedule from the project\.
+.LP
+.TP
+\fI\-\-json\fP
+Emit a structured result for repeat updates\.
+.LP
+.TP
+\fI\-\-db\[eq]PATH\fP
+Path to the Things database\. Overrides the THINGSDB environment variable\.
 .LP
 .PP
 \fBEXAMPLES\fP
@@ -1446,7 +1535,7 @@ terminal Full Disk Access to read it\.
 .SH things repeating [OPTIONS...]
 .LP
 .PP
-Lists repeating tasks from the local Things database (read\-only)\.
+Lists repeating tasks and projects from the local Things database (read\-only)\.
 .LP
 .PP
 \fBOPTIONS\fP
