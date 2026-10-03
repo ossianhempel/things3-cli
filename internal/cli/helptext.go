@@ -255,6 +255,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -265,7 +271,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -349,6 +355,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -359,7 +371,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -439,6 +451,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -449,7 +467,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -529,6 +547,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -539,7 +563,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -619,6 +643,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -629,7 +659,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -711,6 +741,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -721,7 +757,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -803,6 +839,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -813,7 +855,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -893,6 +935,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -903,7 +951,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -984,6 +1032,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -994,7 +1048,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -1074,6 +1128,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -1084,7 +1144,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -1164,6 +1224,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -1174,7 +1240,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -1254,6 +1320,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -1264,7 +1336,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -1344,6 +1416,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -1354,7 +1432,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -1434,6 +1512,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -1444,7 +1528,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -1524,6 +1608,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -1534,7 +1624,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.
@@ -1988,6 +2078,12 @@ OPTIONS
   --modified-before=DATE
     Filter tasks modified before (YYYY-MM-DD or RFC3339).
 
+  --completed-after=DATE
+    Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339).
+
+  --completed-before=DATE
+    Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339).
+
   --due-before=DATE
     Filter tasks due before (YYYY-MM-DD).
 
@@ -1998,7 +2094,7 @@ OPTIONS
     Filter tasks with URLs in notes.
 
   --sort=FIELDS
-    Sort by fields (e.g. created,-deadline,title).
+    Sort by fields (e.g. created,-deadline,title; -completed for newest completions).
 
   --recursive
     Include checklist items in JSON output.

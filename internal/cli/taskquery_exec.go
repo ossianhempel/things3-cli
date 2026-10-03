@@ -65,6 +65,9 @@ func hasExplicitSelector(cmdFlags map[string]bool, opts TaskQueryOptions) bool {
 	if opts.CreatedBefore != "" || opts.CreatedAfter != "" || opts.ModifiedBefore != "" || opts.ModifiedAfter != "" {
 		return true
 	}
+	if opts.CompletedBefore != "" || opts.CompletedAfter != "" {
+		return true
+	}
 	if opts.DueBefore != "" || opts.StartBefore != "" {
 		return true
 	}

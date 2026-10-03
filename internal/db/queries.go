@@ -832,6 +832,14 @@ func (s *Store) queryTasks(where string, args []any, filter TaskFilter, order st
 		b.WriteString(" AND t.userModificationDate < ?")
 		params = append(params, *filter.ModifiedBefore)
 	}
+	if filter.CompletedAfter != nil {
+		b.WriteString(" AND t.stopDate IS NOT NULL AND t.stopDate >= ?")
+		params = append(params, *filter.CompletedAfter)
+	}
+	if filter.CompletedBefore != nil {
+		b.WriteString(" AND t.stopDate IS NOT NULL AND t.stopDate < ?")
+		params = append(params, *filter.CompletedBefore)
+	}
 	if filter.DueBefore != nil {
 		b.WriteString(" AND t.deadline IS NOT NULL AND t.deadline <= ?")
 		params = append(params, *filter.DueBefore)

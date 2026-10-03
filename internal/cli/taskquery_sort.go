@@ -34,6 +34,8 @@ func compareTaskField(left db.Task, right db.Task, field string) int {
 		return compareString(left.Created, right.Created)
 	case "modified":
 		return compareString(left.Modified, right.Modified)
+	case "completed":
+		return compareString(left.StopDate, right.StopDate)
 	case "deadline":
 		return compareString(left.Deadline, right.Deadline)
 	case "start":

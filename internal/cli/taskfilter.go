@@ -24,6 +24,8 @@ type TaskQueryOptions struct {
 	CreatedAfter     string
 	ModifiedBefore   string
 	ModifiedAfter    string
+	CompletedBefore  string
+	CompletedAfter   string
 	DueBefore        string
 	StartBefore      string
 	IncludeRepeating bool
@@ -121,6 +123,20 @@ func buildTaskFilter(store *db.Store, opts TaskQueryOptions) (db.TaskFilter, []T
 			return db.TaskFilter{}, nil, err
 		}
 		filter.ModifiedBefore = &value
+	}
+	if opts.CompletedAfter != "" {
+		value, err := parseTimestampBound(opts.CompletedAfter, false)
+		if err != nil {
+			return db.TaskFilter{}, nil, err
+		}
+		filter.CompletedAfter = &value
+	}
+	if opts.CompletedBefore != "" {
+		value, err := parseTimestampBound(opts.CompletedBefore, true)
+		if err != nil {
+			return db.TaskFilter{}, nil, err
+		}
+		filter.CompletedBefore = &value
 	}
 	if opts.DueBefore != "" {
 		value, err := parseThingsDate(opts.DueBefore)
@@ -228,6 +244,8 @@ func parseSortSpec(spec string) ([]TaskSortField, string, error) {
 
 var taskSortAliases = map[string]string{
 	"due":         "deadline",
+	"stop":        "completed",
+	"stop_date":   "completed",
 	"proj":        "project",
 	"today-index": "today_idx",
 	"today_index": "today_idx",
@@ -236,6 +254,7 @@ var taskSortAliases = map[string]string{
 var taskSortOrder = map[string]string{
 	"created":   "t.creationDate",
 	"modified":  "t.userModificationDate",
+	"completed": "t.stopDate",
 	"deadline":  "t.deadline",
 	"start":     "t.startDate",
 	"title":     "t.title COLLATE NOCASE",

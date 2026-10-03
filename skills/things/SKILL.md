@@ -32,6 +32,13 @@ Quick start (read)
 - `things show --project "Project Name"`
 - `things show --id <TODO_UUID> --recursive --json`
 
+Completed / done tasks (active lists like `tasks`, `today`, `search` hide closed items by default)
+- `things logtoday` lists to-dos completed or canceled today.
+- `things logbook` lists completed and canceled to-dos, newest first; `things completed` / `things canceled` narrow to one status.
+- Filter by completion date: `things logbook --completed-after 2026-09-28 --completed-before 2026-10-03 --select title,status,stop_date,project`. Date-only `--completed-before` is inclusive of that day.
+- Sort by completion date with `--sort -completed` (newest first) or `--sort completed`; `stop_date` is the selectable completion timestamp.
+- To include closed items in a general query, use `things tasks --status completed` (or `canceled`/`any`) or `--all`.
+
 Write (URL scheme)
 - `things add "Task title" --notes "..." --list "Project or Area"`
 - Checklist items (repeat `--checklist-item` per item): `things add "My task" --checklist-item="Step 1" --checklist-item="Step 2" --checklist-item="Step 3"`
@@ -86,9 +93,9 @@ Filters + DB
 - Rich query: `--query` supports boolean ops, field predicates, and regex (e.g. `title:/regex/ AND tag:work`).
 - Repeating tasks and projects: `things repeating` or `--query 'repeating:true'`.
 - Repeating templates: `things templates --area "Area Name"` lists hidden template rows that control future recurring instances.
-- Date filters: `--created-before/after`, `--modified-before/after`, `--due-before`, `--start-before`.
+- Date filters: `--created-before/after`, `--modified-before/after`, `--completed-before/after`, `--due-before`, `--start-before`.
 - URL filter: `--has-url`.
-- Sorting: `--sort created,-deadline,title`.
+- Sorting: `--sort created,-deadline,title`; `completed` sorts by completion date.
 - Output: `--format table|json|jsonl|csv`, `--select uuid,title,status`, `--no-header`. `--json` still works. `today_index_reference_date` is selectable as a raw packed integer but is not a generic `--sort` field.
 - `--recursive` includes checklist items in JSON output.
 - Active lists skip to-dos left open inside a trashed, completed, or canceled project, matching Things. Use `show --id <UUID>` to reach one anyway, or `logbook`/`completed`/`canceled` for children closed with their project.

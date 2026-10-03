@@ -27,10 +27,12 @@ func addTaskQueryFlags(cmd *cobra.Command, opts *TaskQueryOptions, includeSearch
 	flags.StringVar(&opts.CreatedAfter, "created-after", "", "Filter tasks created after (YYYY-MM-DD or RFC3339)")
 	flags.StringVar(&opts.ModifiedBefore, "modified-before", "", "Filter tasks modified before (YYYY-MM-DD or RFC3339)")
 	flags.StringVar(&opts.ModifiedAfter, "modified-after", "", "Filter tasks modified after (YYYY-MM-DD or RFC3339)")
+	flags.StringVar(&opts.CompletedBefore, "completed-before", "", "Filter tasks completed or canceled before (YYYY-MM-DD or RFC3339)")
+	flags.StringVar(&opts.CompletedAfter, "completed-after", "", "Filter tasks completed or canceled after (YYYY-MM-DD or RFC3339)")
 	flags.StringVar(&opts.DueBefore, "due-before", "", "Filter tasks due before (YYYY-MM-DD)")
 	flags.StringVar(&opts.StartBefore, "start-before", "", "Filter tasks starting before (YYYY-MM-DD)")
 	flags.BoolVar(&opts.HasURL, "has-url", false, "Filter tasks with URLs in notes")
-	flags.StringVar(&opts.Sort, "sort", "", "Sort by fields (e.g. created,-deadline,title)")
+	flags.StringVar(&opts.Sort, "sort", "", "Sort by fields (e.g. created,-deadline,title; -completed for newest completions)")
 }
 
 func addTaskOutputFlags(cmd *cobra.Command, format *string, selectRaw *string, asJSON *bool, noHeader *bool) {

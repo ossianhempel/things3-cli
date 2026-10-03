@@ -85,6 +85,40 @@ func TestLogTodayCommand(t *testing.T) {
 	assertContains(t, out, "Completed Task")
 }
 
+func TestCompletedDateFiltersAndSort(t *testing.T) {
+	dbPath := writeTestDB(t)
+	conn, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		t.Fatalf("open db: %v", err)
+	}
+	old := float64(time.Now().AddDate(0, 0, -10).Unix())
+	if _, err := conn.Exec(`INSERT INTO TMTask (uuid, type, status, trashed, title, start, creationDate, stopDate) VALUES ('COMPOLD', 0, 3, 0, 'Old Completed Task', 1, ?, ?)`, old, old); err != nil {
+		t.Fatalf("insert old completed task: %v", err)
+	}
+	if err := conn.Close(); err != nil {
+		t.Fatalf("close db: %v", err)
+	}
+	cutoff := time.Now().AddDate(0, 0, -3).Format("2006-01-02")
+
+	out, _, code := runThings(t, "", "completed", "--db", dbPath, "--completed-after", cutoff)
+	requireSuccess(t, code)
+	assertContains(t, out, "Completed Task")
+	assertNotContains(t, out, "Old Completed Task")
+
+	out, _, code = runThings(t, "", "logbook", "--db", dbPath, "--completed-before", cutoff)
+	requireSuccess(t, code)
+	assertContains(t, out, "Old Completed Task")
+	assertNotContains(t, out, "Canceled Task")
+
+	out, _, code = runThings(t, "", "completed", "--db", dbPath, "--format", "csv", "--select", "title", "--no-header", "--sort", "completed")
+	requireSuccess(t, code)
+	assertBefore(t, out, "Old Completed Task", "Completed Task\n")
+
+	out, _, code = runThings(t, "", "completed", "--db", dbPath, "--format", "csv", "--select", "title", "--no-header", "--sort", "-stop_date")
+	requireSuccess(t, code)
+	assertBefore(t, out, "Completed Task\n", "Old Completed Task")
+}
+
 func TestCreatedTodayCommand(t *testing.T) {
 	dbPath := writeTestDB(t)
 	out, _, code := runThings(t, "", "createdtoday", "--db", dbPath)

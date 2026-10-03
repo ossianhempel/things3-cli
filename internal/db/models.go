@@ -138,6 +138,8 @@ type TaskFilter struct {
 	CreatedAfter          *float64
 	ModifiedBefore        *float64
 	ModifiedAfter         *float64
+	CompletedBefore       *float64
+	CompletedAfter        *float64
 	DueBefore             *int
 	StartBefore           *int
 	HasURL                *bool
