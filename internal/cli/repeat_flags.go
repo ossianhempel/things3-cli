@@ -29,7 +29,7 @@ type RepeatSpec struct {
 
 func addRepeatFlags(cmd *cobra.Command, opts *RepeatOptions, allowClear bool) {
 	flags := cmd.Flags()
-	flags.StringVar(&opts.Rule, "repeat", "", "Repeat unit: day, week, month, or year")
+	flags.StringVar(&opts.Rule, "repeat", "", "Repeat unit: day, week, month, or year (live writes unsupported; use native Things UI)")
 	flags.StringVar(&opts.Mode, "repeat-mode", "after-completion", "Repeat mode: after-completion or schedule")
 	flags.IntVar(&opts.Every, "repeat-every", 1, "Repeat interval (every N units)")
 	flags.StringVar(&opts.Start, "repeat-start", "", "Repeat anchor date (YYYY-MM-DD)")

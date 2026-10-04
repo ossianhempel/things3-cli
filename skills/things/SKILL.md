@@ -15,7 +15,7 @@ For any write whose target is not already a trusted UUID:
 2. **Identify** the intended row and capture its UUID. If multiple items match, show the candidates and ask the human; never guess by title.
 3. **Preview** the exact write with `--dry-run` when the command supports it.
 4. **Write** using `--id <UUID>`.
-5. **Verify** by re-reading that UUID (and, for recurrence, the resolved template UUID).
+5. **Verify** by re-reading that UUID; recurrence additionally requires inspecting the saved native Repeat settings.
 6. **Report** what was requested, what was verified, and any remaining uncertainty.
 
 Reads do not authorize writes. Prefer UUIDs even when a command accepts a title.
@@ -59,33 +59,19 @@ Write (URL scheme)
 - Move to Someday: `things update --id <uuid> --when=someday`
 - Move to This Evening (Later): `things update --id <uuid> --later` (alias for `--when=evening`)
 
-Repeating (database writes)
-- Use after-completion mode (the default) when the next copy should depend on completion: `things update --id <UUID> --repeat=week --repeat-every=2`.
-- Use schedule mode for a fixed calendar cadence: `things add "Daily standup" --repeat=day --repeat-mode=schedule`.
-- `--repeat-start=YYYY-MM-DD` anchors weekday/month/day recurrence. It is not the item's ordinary `--when` schedule.
-- `--repeat-deadline=N` adds a deadline so each copy appears in Today N days earlier.
-- Bound a schedule with either `--repeat-until=YYYY-MM-DD` (stop after a date) or `--repeat-count=N` (stop after N occurrences). The two are mutually exclusive; count-based rules omit an end date entirely. `--repeat-count=20` creates exactly 20 occurrences.
-- `--repeat-clear` removes the repeat rule; omission leaves the existing rule unchanged.
-- Repeating projects are supported: `things add-project "Title" --repeat=week --repeat-mode=schedule` and `things update-project --id <UUID> --repeat=...`. Projects support the same repeat flags as todos.
-- `things repeating` and `things templates` include both repeating tasks and projects.
+Repeating tasks and projects (native Things UI)
 
-Repeat changes must use the full workflow:
+Use Things itself to create or change recurrence. The URL scheme does not expose repeat creation. The CLI's former direct SQLite writer could report success while Things still treated the item as a normal task; database read-back is not application verification. Never mutate the live database with SQL, including when Things is closed. Never explain a missing repeat rule as a nightly-generation delay.
 
-```sh
-# Existing todo or project: resolve and retain the UUID first.
-things templates --search "Monthly bill" --format json --select uuid,title
-things update --id <TEMPLATE_UUID> --repeat=month --repeat-mode=schedule \
-  --repeat-start=2026-08-01 --repeat-deadline=2 --dry-run
-things update --id <TEMPLATE_UUID> --repeat=month --repeat-mode=schedule \
-  --repeat-start=2026-08-01 --repeat-deadline=2
-things templates --search "Monthly bill" --format json
-```
+1. Read existing items and their parent area/project; retain UUIDs to avoid duplicates. For new items, create an ordinary task in the intended parent via the URL scheme, then locate it.
+2. Open the identified item in Things using Quick Find or its Things link. Use native Items > Repeat. For a new template, File > New Repeating To-Do is also available.
+3. For "once a day", choose **daily**, every **1** day, starting today, ending **never**. Choose **after completion** only when that is the requested behavior.
+4. Save with OK. Reopen the template's repeat settings and verify the cadence, start date, end condition, title, and parent in Things. A generated occurrence and its template are different items; retain both UUIDs when available.
+5. Use `things templates` / `things repeating` as a supplemental read. Report success only after the native saved rule is visible. If UI access is unavailable, explain the concrete blocker and leave recurrence unconfirmed.
 
-Treat successful output as verified template state, not as proof that Things has already spawned a visible occurrence. Repeating adds first create the item through Things, then locate and update its database row. Things spawns the visible current occurrence on its own schedule (typically a nightly pass), so a verified template may not produce a visible instance until then. If output reports partial success, a non-repeating item may remain:
+The CLI refuses writes to Things-managed database paths. Repeat flags remain useful for `--dry-run` planning and isolated database fixtures; they are not a supported live recurrence backend. Do not retry with `--db`, move the database, or substitute a raw SQLite script to bypass this limit.
 
-- When a trusted UUID is reported, re-read that UUID and retry only the missing repeat stage.
-- When creation succeeded but identity is unknown, search using the exact title plus creation time/context and ask the human to disambiguate multiple candidates.
-- Do not claim rollback, do not interpolate untrusted titles into shell commands, and do not repeat the add blindly.
+Official workflow: https://culturedcode.com/things/support/articles/2803564/
 
 Filters + DB
 - Use `--db` or `THINGSDB` to point to a specific Things database. Accepted forms: the `main.sqlite` file, the `Things Database.thingsdatabase` directory, or the parent `ThingsData-*` directory.
@@ -103,10 +89,7 @@ Filters + DB
 Auth + permissions
 - Read-only database commands may require Full Disk Access for the terminal or agent host.
 - Ordinary URL-scheme updates require an auth token: run `things auth`, set `THINGS_AUTH_TOKEN`, or pass `--auth-token`.
-- Repeat-only updates write directly to the Things database and require writable database access (normally Full Disk Access), but not a URL token.
-- Repeat adds use the unauthenticated add URL plus a direct database write, so they require writable database access but not an auth token.
-- Repeat updates that also change ordinary fields use both paths and require both auth and writable database access.
-- Use `--db` or `THINGSDB` only for an explicitly trusted Things database. Check the resolved target shown by preview before writing.
+- Recurrence requires the native Things UI; Full Disk Access only enables reads and does not make direct SQLite writes a supported app interface.
 - URL scheme writes can open/foreground Things; use `--dry-run` to print URLs or `--foreground` to force focus.
 - Update `--when/--later` is verified against the database by default; use `--no-verify` to skip verification.
 - `--later` / `--when=evening` refuses to move tasks that are already scheduled for a non-today date; use `--allow-non-today` to override.

@@ -25,8 +25,8 @@ for required in \
 	'**Identify**' \
 	'**Preview**' \
 	'**Verify**' \
-	'Repeating projects are supported' \
-	'partial success' \
+	'Repeating tasks and projects (native Things UI)' \
+	'Report success only after the native saved rule is visible' \
 	'Full Disk Access'
 do
 	if ! grep -Fq -- "$required" "$canonical"; then

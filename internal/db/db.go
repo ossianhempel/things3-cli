@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -88,6 +89,13 @@ func OpenWritable(path string) (*Store, error) {
 	canonical, err := filepath.EvalSymlinks(abs)
 	if err != nil {
 		return nil, fmt.Errorf("canonicalize writable database: %w", err)
+	}
+	// Things owns its live database and in-memory/sync state. Reading our own
+	// SQL writes back cannot prove the application accepted a repeat rule.
+	for _, component := range strings.Split(canonical, string(filepath.Separator)) {
+		if strings.HasSuffix(component, ".thingsdatabase") || strings.Contains(component, "com.culturedcode.Things") {
+			return nil, fmt.Errorf("repeating writes to the live Things database are unsupported: use Things' Items > Repeat dialog and verify the saved rule in the app; --dry-run and read-only repeat queries remain available")
+		}
 	}
 	dsn := sqliteDSN(canonical, "rw")
 	conn, err := sql.Open("sqlite", dsn)
