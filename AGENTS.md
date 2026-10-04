@@ -54,6 +54,9 @@
 - Treat `skills/things/SKILL.md` as canonical and keep it in sync with the
   active mirror at `../agent-scripts/skills/things/SKILL.md`.
 - After CLI changes, update both copies so agent guidance stays aligned.
+- Before pushing a canonical skill change, publish the matching agent-scripts
+  mirror first. Local parity does not prove published parity. Verify the remote
+  Things skill parity workflow after pushing; a green local check is insufficient.
 - Use `make check-things-skill` to check parity and `make sync-things-skill`
   for the symlink-safe, atomic local sync path.
 - Use `.codex/skills/release-flow/SKILL.md` for public release prep,
